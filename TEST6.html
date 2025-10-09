@@ -17,10 +17,13 @@
     input,select,textarea{width:100%;padding:12px;border:1px solid #dbe4ff;border-radius:12px;font-size:16px;background:#f8fbff}
     textarea{min-height:120px;resize:vertical}
     .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-    button{appearance:none;border:0;border-radius:12px;padding:12px 16px;font-weight:800;cursor:pointer;background:var(--brand);color:#fff}
-    .hint{font-size:12px;color:var(--muted)}
-    .counter{font-size:12px;color:var(--muted);text-align:right}
-    @media(max-width:640px){.row{grid-template-columns:1fr}}
+    .btns{display:flex;gap:10px;margin-top:12px}
+    button{appearance:none;border:0;border-radius:12px;padding:12px 16px;font-weight:800;cursor:pointer}
+    .primary{background:var(--brand);color:#fff}
+    .ghost{background:#e0ecff;color:#0b1f44}
+    .status{margin-top:12px;font-size:14px}
+    .ok{color:var(--ok)} .warn{color:var(--warn)} .err{color:var(--err)}
+    @media (max-width:640px){.row{grid-template-columns:1fr}}
   </style>
 </head>
 <body>
@@ -29,14 +32,14 @@
       <h1>新加州｜住戶公設回報</h1>
       <p class="sub">請提供清楚描述與照片，協助管委會提交給建商，作為改善依據。</p>
 
-      <!-- ✅ 這裡直接把表單送到 GAS -->
-      <form 
-        id="reportForm"
-        action="https://script.google.com/macros/s/AKfycbz3Ow1dXJSPab1tM_YvNRcTRBKdzB8FCUlmNsSMuGeghcJnWxic-4pw_DKjXiCDOvbp3Q/exec"
-        method="post"
-        enctype="multipart/form-data"
-        target="_blank"
-      >
+      <!-- 隱藏 iframe：接收 GAS 回傳，不換頁 -->
+      <iframe name="upload_frame" id="upload_frame" style="display:none;"></iframe>
+
+      <!-- 把 action 改成你的 /exec -->
+      <form id="reportForm"
+            action="https://script.google.com/macros/s/AKfycbz3Ow1dXJSPab1tM_YvNRcTRBKdzB8FCUlmNsSMuGeghcJnWxic-4pw_DKjXiCDOvbp3Q/exec"
+            method="post" enctype="multipart/form-data"
+            target="upload_frame">
         <div class="row">
           <div>
             <label>回報時間</label>
@@ -58,15 +61,9 @@
             <label>地點</label>
             <select name="location" id="location" required>
               <option value="">— 請選擇 —</option>
-              <option>A棟</option>
-              <option>B棟</option>
-              <option>C棟</option>
-              <option>D棟</option>
-              <option>E棟</option>
-              <option>大廳</option>
-              <option>停車場B1</option>
-              <option>停車場B2</option>
-              <option>停車場B3</option>
+              <option>A棟</option><option>B棟</option><option>C棟</option>
+              <option>D棟</option><option>E棟</option>
+              <option>大廳</option><option>停車場B1</option><option>停車場B2</option><option>停車場B3</option>
               <option>其他</option>
             </select>
           </div>
@@ -78,15 +75,16 @@
         </div>
 
         <label>問題說明（最多 500 字）</label>
-        <textarea name="description" id="description" required></textarea>
-        <div class="counter"><span id="descCount">0</span>/500</div>
+        <textarea name="description" id="description" required placeholder="請描述問題具體情況、是否影響安全、持續時間…"></textarea>
 
-        <label>上傳照片（最多 5 張，單檔 ≤ 10MB）</label>
+        <label style="margin-top:10px;">上傳照片（最多 5 張，單檔 ≤ 10MB）</label>
         <input type="file" name="photos" id="photos" accept="image/*" multiple />
 
-        <div style="margin-top:14px">
-          <button type="submit">送出回報</button>
+        <div class="btns">
+          <button type="button" class="ghost" id="btnReset">清除</button>
+          <button type="submit" class="primary">送出回報</button>
         </div>
+        <div id="status" class="status"></div>
       </form>
     </div>
   </div>
@@ -94,19 +92,44 @@
   <script>
     // 時間顯示
     const clientTimeEl = document.getElementById('clientTime');
-    const fmt = d => new Intl.DateTimeFormat('zh-TW',{dateStyle:'medium',timeStyle:'short'}).format(d);
+    const fmt = d => new Intl.DateTimeFormat('zh-TW',{dateStyle:'medium', timeStyle:'short'}).format(d);
     const tick = ()=> clientTimeEl.value = fmt(new Date());
-    tick(); setInterval(tick,10000);
+    tick(); setInterval(tick, 10000);
 
-    // 地點＝其他 → 顯示地點說明
+    // 「其他」→ 顯示地點說明
     const sel = document.getElementById('location');
     const locNoteWrap = document.getElementById('locNoteWrap');
     sel.addEventListener('change', ()=>{ locNoteWrap.style.display = (sel.value==='其他')? 'block':'none'; });
 
-    // 問題說明 500字計數
-    const desc = document.getElementById('description');
-    const cnt = document.getElementById('descCount');
-    desc.addEventListener('input', ()=>{ cnt.textContent = desc.value.length; if(desc.value.length>500){desc.value=desc.value.slice(0,500); cnt.textContent=500;} });
+    // 送出前做基本檢查（仍由原生 form 上傳）
+    const form = document.getElementById('reportForm');
+    const statusEl = document.getElementById('status');
+    document.getElementById('btnReset').addEventListener('click', ()=> form.reset());
+
+    form.addEventListener('submit', (e)=>{
+      const files = document.getElementById('photos').files || [];
+      if(!form.location.value){ e.preventDefault(); statusEl.textContent='請選擇地點。'; statusEl.className='status warn'; return; }
+      if(form.location.value==='其他' && !form.location_note.value.trim()){ e.preventDefault(); statusEl.textContent='請填寫地點說明。'; statusEl.className='status warn'; return; }
+      if(!form.description.value.trim()){ e.preventDefault(); statusEl.textContent='請填寫問題說明。'; statusEl.className='status warn'; return; }
+      if(files.length>5){ e.preventDefault(); statusEl.textContent='最多 5 張照片'; statusEl.className='status warn'; return; }
+      for(const f of files){ if(f.size/1024/1024>10){ e.preventDefault(); statusEl.textContent='單檔不可超過 10MB'; statusEl.className='status warn'; return; } }
+      statusEl.textContent='上傳中…請稍候';
+      statusEl.className='status';
+    });
+
+    // 接收 GAS 回傳（hidden iframe -> postMessage）
+    window.addEventListener('message', (ev)=>{
+      if(!ev.data || ev.data.source!=='gas') return;
+      if(ev.data.success){
+        statusEl.innerHTML = `✅ 已送出，案件編號：<b>${ev.data.caseId}</b>`;
+        statusEl.className='status ok';
+        form.reset();
+        tick();
+      }else{
+        statusEl.textContent = `上傳失敗：${ev.data.message || '未知錯誤'}`;
+        statusEl.className='status err';
+      }
+    });
   </script>
 </body>
 </html>
