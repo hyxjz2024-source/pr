@@ -32,19 +32,75 @@
     .badge{background:#e0f2fe;border:1px solid #bae6fd;color:#075985;padding:4px 10px;border-radius:999px;font-size:12px}
     @media (max-width:640px){.row{grid-template-columns:1fr}}
   </style>
-  <script>
-    const CONFIG = {
-      API_URL: "https://script.google.com/macros/s/AKfycbzl3n0NahYqg-UT92EUYGQ3vIiy_q_XqorWcuXs8L1VK6zn9v9hthXX6kbfNgBEeOElXQ/exec", // ← 貼上你部署後的 GAS 網址
-      MAX_FILES: 5,
-      MAX_FILE_MB: 10
-    };
-  </script>
+<script>
+  const CONFIG = {
+    API_URL: "https://script.google.com/macros/s/AKfycbzl3n0NahYqg-UT92EUYGQ3vIiy_q_XqorWcuXs8L1VK6zn9v9hthXX6kbfNgBEeOElXQ/exec", // ← 用你的 /exec
+    MAX_FILES: 5,
+    MAX_FILE_MB: 10
+  };
+
+  // 時間顯示
+  const clientTimeEl = document.getElementById('clientTime');
+  const fmt = (d)=> new Intl.DateTimeFormat('zh-TW', {dateStyle:'medium', timeStyle:'short'}).format(d);
+  const tick = ()=> clientTimeEl.value = fmt(new Date());
+  tick(); setInterval(tick, 10000);
+
+  // 地點＝其他 → 顯示 地點說明
+  const sel = document.getElementById('location');
+  const locNoteWrap = document.getElementById('locNoteWrap');
+  sel.addEventListener('change', ()=>{ locNoteWrap.style.display = (sel.value==='其他')? 'block':'none'; });
+
+  // 問題說明 500字計數
+  const desc = document.getElementById('description');
+  const cnt = document.getElementById('descCount');
+  desc.addEventListener('input', ()=>{ cnt.textContent = desc.value.length; if(desc.value.length>500){desc.value=desc.value.slice(0,500); cnt.textContent=500;} });
+
+  // 送出
+  const form = document.getElementById('reportForm');
+  const statusEl = document.getElementById('status');
+  document.getElementById('btnReset').addEventListener('click', ()=> form.reset());
+
+  form.addEventListener('submit', async (e)=>{
+    e.preventDefault();                 // 關鍵：擋掉表單預設 GET
+    statusEl.textContent = '';
+
+    const fd = new FormData(form);
+    // 前端限制：檔數與容量
+    const files = (document.getElementById('photos').files||[]);
+    if(files.length > CONFIG.MAX_FILES){
+      statusEl.textContent = `最多只能上傳 ${CONFIG.MAX_FILES} 張照片。`; statusEl.className='status warn'; return;
+    }
+    for(const f of files){
+      if(f.size/1024/1024 > CONFIG.MAX_FILE_MB){
+        statusEl.textContent=`單檔不可超過 ${CONFIG.MAX_FILE_MB}MB：${f.name}`; statusEl.className='status warn'; return;
+      }
+    }
+
+    // 必填檢查
+    if(!fd.get('location')){ statusEl.textContent='請選擇地點。'; statusEl.className='status warn'; return; }
+    if((fd.get('location')==='其他') && !(fd.get('location_note')||'').trim()){ statusEl.textContent='請填寫地點說明。'; statusEl.className='status warn'; return; }
+    if(!(fd.get('description')||'').trim()){ statusEl.textContent='請填寫問題說明。'; statusEl.className='status warn'; return; }
+
+    statusEl.textContent='上傳中…請稍候'; statusEl.className='status';
+    try{
+      const resp = await fetch(CONFIG.API_URL, { method:'POST', body: fd });
+      const data = await resp.json();
+      if(!resp.ok || !data.success) throw new Error(data.message || '上傳失敗');
+      statusEl.innerHTML = `✅ 已送出，案件編號：<b>${data.caseId}</b>`; statusEl.className='status ok';
+      form.reset(); tick();
+    }catch(err){
+      statusEl.textContent = `上傳失敗：${err.message}`;
+      statusEl.className='status err';
+      console.error(err);
+    }
+  });
+</script>
 </head>
 <body>
   <div class="wrap">
     <div class="card">
       <h1>新加州｜住戶公設回報</h1>
-      <p class="sub">請提供清楚描述與照片，協助管委會提交給驗收廠商，同步整理於驗收報告，作為建商改善依據。</p>
+      <p class="sub">請提供清楚描述與照片，一同協助管委會提交給驗收廠商，同步整理於驗收報告，作為建商改善依據。</p>
 
       <form id="reportForm">
         <div class="row">
@@ -164,6 +220,7 @@
   </script>
 </body>
 </html>
+
 
 
 
