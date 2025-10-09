@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>新加州｜住戶公設回報</title>
+  <meta name="color-scheme" content="light" />
+  <style>
+    :root{--bg:#eaf2ff;--card:#ffffff;--ink:#0f172a;--muted:#475569;--brand:#3b82f6;--ok:#16a34a;--warn:#d97706;--err:#dc2626}
+    *{box-sizing:border-box}
+    body{margin:0;background:linear-gradient(180deg,#eef5ff, #eaf2ff);font-family:"Noto Sans TC", system-ui,-apple-system}
+    .wrap{max-width:900px;margin:32px auto;padding:16px}
+    .card{background:var(--card);border-radius:18px;box-shadow:0 10px 30px rgba(3,7,18,.1);padding:22px}
+    h1{margin:0 0 6px;font-size:28px;color:var(--ink)}
+    p.sub{margin:0 0 14px;color:var(--muted)}
+    label{display:block;margin:12px 0 6px;font-weight:700;color:#0b1f44}
+    input,select,textarea{width:100%;padding:12px 12px;border:1px solid #dbe4ff;border-radius:12px;font-size:16px;background:#f8fbff}
+    textarea{min-height:120px;resize:vertical}
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .btns{display:flex;gap:10px;margin-top:12px}
+    button{appearance:none;border:0;border-radius:12px;padding:12px 16px;font-weight:800;cursor:pointer}
+    .primary{background:var(--brand);color:#fff}
+    .ghost{background:#e0ecff;color:#0b1f44}
+    .hint{font-size:12px;color:var(--muted)}
+    .counter{font-size:12px;color:var(--muted);text-align:right}
+    .status{margin-top:12px;font-size:14px}
+    .ok{color:var(--ok)} .warn{color:var(--warn)} .err{color:var(--err)}
+    .divider{height:1px;background:#e5edff;margin:18px 0}
+    .footer{margin-top:14px;color:#64748b;font-size:12px}
+    @media (max-width:640px){.row{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1>新加州｜住戶公設回報</h1>
+      <p class="sub">請提供清楚描述與照片，協助管委會提交給建商，作為改善依據。</p>
+
+      <form id="reportForm" method="post" enctype="multipart/form-data">
+        <div class="row">
+          <div>
+            <label>回報時間</label>
+            <input name="clientTime" id="clientTime" readonly />
+            <div class="hint">系統自動帶入（最終以後端紀錄為準）。</div>
+          </div>
+          <div>
+            <label>回報人</label>
+            <input name="reporter" />
+          </div>
+        </div>
+
+        <div class="row">
+          <div>
+            <label>聯絡方式</label>
+            <input name="contact" placeholder="市內電話 或 手機" />
+          </div>
+          <div>
+            <label>地點</label>
+            <select name="location" id="location" required>
+              <option value="">— 請選擇 —</option>
+              <option>A棟</option><option>B棟</option><option>C棟</option><option>D棟</option><option>E棟</option>
+              <option>大廳</option><option>停車場B1</option><option>停車場B2</option><option>停車場B3</option>
+              <option>其他</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="locNoteWrap" style="display:none">
+          <label>地點說明（選「其他」才需填）</label>
+          <input name="location_note" placeholder="請補充具體位置，如：E棟1F 垃圾間旁" />
+        </div>
+
+        <label>問題說明（最多 500 字）</label>
+        <textarea name="description" id="description" required placeholder="請描述問題具體情況、是否影響安全、持續時間…"></textarea>
+        <div class="counter"><span id="descCount">0</span>/500</div>
+
+        <label>上傳照片（最多 5 張，單檔 ≤ 10MB）</label>
+        <input type="file" name="photos" id="photos" accept="image/*" multiple />
+        <div class="hint">建議先壓縮相片可加速上傳。</div>
+
+        <div class="btns">
+          <button type="button" class="ghost" id="btnReset">清除</button>
+          <button type="submit" class="primary">送出回報</button>
+        </div>
+        <div id="status" class="status"></div>
+      </form>
+
+      <div class="divider"></div>
+      <div class="footer">提交即同意用於維修聯繫與統計。請勿上傳含個資或敏感資訊之影像。</div>
+    </div>
+  </div>
+
+  <script>
+    const CONFIG = {
+      API_URL: "https://script.google.com/macros/s/AKfycbzbyGKEKta-ki5KXQ6hZamA2TfMYjp6GuG6x4KiQaYPTBvIxmLsLF_cXiIHLTHttel5tQ/exec", // ← 換成你的 /exec
+      MAX_FILES: 5,
+      MAX_FILE_MB: 10
+    };
+
+    // 時間顯示
+    const clientTimeEl = document.getElementById('clientTime');
+    const fmt = (d)=> new Intl.DateTimeFormat('zh-TW', {dateStyle:'medium', timeStyle:'short'}).format(d);
+    const tick = ()=> clientTimeEl.value = fmt(new Date());
+    tick(); setInterval(tick, 10000);
+
+    // 地點＝其他 → 顯示 地點說明
+    const sel = document.getElementById('location');
+    const locNoteWrap = document.getElementById('locNoteWrap');
+    sel.addEventListener('change', ()=>{ locNoteWrap.style.display = (sel.value==='其他')? 'block':'none'; });
+
+    // 問題說明 500字計數
+    const desc = document.getElementById('description');
+    const cnt = document.getElementById('descCount');
+    desc.addEventListener('input', ()=>{ cnt.textContent = desc.value.length; if(desc.value.length>500){desc.value=desc.value.slice(0,500); cnt.textContent=500;} });
+
+    // 送出
+    const form = document.getElementById('reportForm');
+    const statusEl = document.getElementById('status');
+    document.getElementById('btnReset').addEventListener('click', ()=> form.reset());
+
+    form.addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      statusEl.textContent = '';
+
+      const fd = new FormData();
+      const raw = new FormData(form);
+      for (const [k,v] of raw.entries()) { if (k !== 'photos') fd.append(k, v); }
+
+      const files = document.getElementById('photos').files || [];
+      if (files.length > CONFIG.MAX_FILES) { statusEl.textContent = `最多 ${CONFIG.MAX_FILES} 張照片`; statusEl.className='status warn'; return; }
+      for (const f of files) {
+        if (f.size/1024/1024 > CONFIG.MAX_FILE_MB) { statusEl.textContent = `單檔不可超過 ${CONFIG.MAX_FILE_MB}MB：${f.name}`; statusEl.className='status warn'; return; }
+        fd.append('photos', f, f.name);
+      }
+
+      if(!fd.get('location')){ statusEl.textContent='請選擇地點。'; statusEl.className='status warn'; return; }
+      if((fd.get('location')==='其他') && !(fd.get('location_note')||'').trim()){ statusEl.textContent='請填寫地點說明。'; statusEl.className='status warn'; return; }
+      if(!(fd.get('description')||'').trim()){ statusEl.textContent='請填寫問題說明。'; statusEl.className='status warn'; return; }
+
+      statusEl.textContent='上傳中…'; statusEl.className='status';
+      try{
+        const resp = await fetch(CONFIG.API_URL, { method:'POST', body: fd });
+        const data = await resp.json();
+        console.log('server data:', data);               // ← 看 debug
+        if(!resp.ok || !data.success) throw new Error(data.message || '上傳失敗');
+        statusEl.innerHTML = `✅ 已送出，案件編號：<b>${data.caseId}</b>`;
+        statusEl.className='status ok';
+        form.reset();
+      }catch(err){
+        statusEl.textContent = `上傳失敗：${err.message}`;
+        statusEl.className='status err';
+        console.error(err);
+      }
+    });
+  </script>
+</body>
+</html>
