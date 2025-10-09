@@ -35,12 +35,12 @@
     h1{margin:0 0 8px;font-size:26px;color:var(--ink)}
     p.sub{margin:0 0 16px;color:var(--muted);font-size:15px;}
 
-    /* 欄位樣式 */
+    /* 欄位樣式 - 全部直式單欄 */
     label{display:block;margin:16px 0 6px;font-weight:700;color:var(--ink)}
     input,select,textarea{
       width:100%;
       padding:12px;
-      border:1px solid #e0e7ff; 
+      border:1px solid #e0e7ff;
       border-radius:10px;
       font-size:16px;
       background:#f8f9ff;
@@ -74,7 +74,7 @@
 <body>
   <div class="wrap">
     <div class="card">
-      <h1>住戶公設回報1</h1>
+      <h1>住戶公設回報</h1>
       <p class="sub">請提供清楚描述與照片，我們將儘速處理。</p>
 
       <iframe name="upload_frame" id="upload_frame" style="display:none;"></iframe>
@@ -115,7 +115,7 @@
 
         <div class="btns">
           <button type="button" class="ghost" id="btnReset">清除</button>
-          <button type="submit" class="primary">送出回報</button>
+          <button type="submit" class="primary" id="submitBtn">送出回報</button>
         </div>
         <div id="status" class="status"></div>
       </form>
@@ -123,21 +123,21 @@
   </div>
 
   <script>
-    // 時間顯示 (不變)
+    // 時間顯示
     const clientTimeEl = document.getElementById('clientTime');
     const fmt = d => new Intl.DateTimeFormat('zh-TW',{dateStyle:'medium', timeStyle:'short'}).format(d);
     const tick = ()=> clientTimeEl.value = fmt(new Date());
     tick(); setInterval(tick, 10000);
 
-    // 「其他」→ 顯示地點說明 (不變)
+    // 「其他」→ 顯示地點說明
     const sel = document.getElementById('location');
     const locNoteWrap = document.getElementById('locNoteWrap');
     sel.addEventListener('change', ()=>{ locNoteWrap.style.display = (sel.value==='其他')? 'block':'none'; });
 
-    // 送出前做基本檢查（使用原生 form 上傳）
+    // 送出前做基本檢查（仍由原生 form 上傳）
     const form = document.getElementById('reportForm');
     const statusEl = document.getElementById('status');
-    const locNoteInput = form.location_note; // 取得地點說明 input 元素
+    const submitBtn = document.getElementById('submitBtn');
 
     document.getElementById('btnReset').addEventListener('click', ()=> {
         form.reset();
@@ -145,9 +145,9 @@
     });
 
     form.addEventListener('submit', (e)=>{
-      const files = document.getElementById('photos').files || [];
+      const files = document.document.getElementById('photos').files || [];
       if(!form.location.value){ e.preventDefault(); statusEl.textContent='請選擇地點。'; statusEl.className='status warn'; return; }
-      if(form.location.value==='其他' && !locNoteInput.value.trim()){ e.preventDefault(); statusEl.textContent='請填寫地點說明。'; statusEl.className='status warn'; return; }
+      if(form.location.value==='其他' && !form.location_note.value.trim()){ e.preventDefault(); statusEl.textContent='請填寫地點說明。'; statusEl.className='status warn'; return; }
       if(!form.description.value.trim()){ e.preventDefault(); statusEl.textContent='請填寫問題說明。'; statusEl.className='status warn'; return; }
       if(files.length>5){ e.preventDefault(); statusEl.textContent='最多 5 張照片'; statusEl.className='status warn'; return; }
       for(const f of files){ if(f.size/1024/1024>10){ e.preventDefault(); statusEl.textContent=`照片 "${f.name}" 超過 10MB 限制。`; statusEl.className='status warn'; return; } }
@@ -156,13 +156,13 @@
       statusEl.className='status';
       
       // 在提交前禁用按鈕，防止重複提交
-      document.querySelector('.primary').disabled = true;
+      submitBtn.disabled = true;
     });
 
     // 接收 GAS 回傳（hidden iframe -> postMessage）
     window.addEventListener('message', (ev)=>{
       if(!ev.data || ev.data.source!=='gas') return;
-      document.querySelector('.primary').disabled = false; // 重新啟用按鈕
+      submitBtn.disabled = false; // 重新啟用按鈕
 
       if(ev.data.success){
         statusEl.innerHTML = `✅ 已送出，案件編號：<b>${ev.data.caseId}</b>`;
@@ -171,10 +171,7 @@
         locNoteWrap.style.display = 'none'; // 重設「其他」欄位顯示狀態
         tick();
       }else{
-        // 顯示更詳細的錯誤訊息
-        let msg = ev.data.message || '未知錯誤';
-        if(ev.data.debug && ev.data.debug.error) msg += ` (Debug: ${ev.data.debug.error.substring(0, 50)}...)`;
-        statusEl.textContent = `上傳失敗：${msg}`;
+        statusEl.textContent = `上傳失敗：${ev.data.message || '未知錯誤'}`;
         statusEl.className='status err';
       }
     });
