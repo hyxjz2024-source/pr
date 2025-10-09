@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>新加州｜住戶公設回報</title>
+  <meta name="color-scheme" content="light" />
+  <style>
+    :root{--bg:#eaf2ff;--card:#ffffff;--ink:#0f172a;--muted:#475569;--brand:#3b82f6;--ok:#16a34a;--warn:#d97706;--err:#dc2626}
+    *{box-sizing:border-box}
+    body{margin:0;background:linear-gradient(180deg,#eef5ff,#eaf2ff);font-family:"Noto Sans TC",system-ui,-apple-system}
+    .wrap{max-width:900px;margin:32px auto;padding:16px}
+    .card{background:var(--card);border-radius:18px;box-shadow:0 10px 30px rgba(3,7,18,.1);padding:22px}
+    h1{margin:0 0 6px;font-size:28px;color:var(--ink)}
+    p.sub{margin:0 0 14px;color:var(--muted)}
+    label{display:block;margin:12px 0 6px;font-weight:700;color:#0b1f44}
+    input,select,textarea{width:100%;padding:12px;border:1px solid #dbe4ff;border-radius:12px;font-size:16px;background:#f8fbff}
+    textarea{min-height:120px;resize:vertical}
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .btns{display:flex;gap:10px;margin-top:12px}
+    button{appearance:none;border:0;border-radius:12px;padding:12px 16px;font-weight:800;cursor:pointer}
+    .primary{background:var(--brand);color:#fff}
+    .ghost{background:#e0ecff;color:#0b1f44}
+    .status{margin-top:12px;font-size:14px}
+    .ok{color:var(--ok)} .warn{color:var(--warn)} .err{color:var(--err)}
+    @media (max-width:640px){.row{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1>新加州｜住戶公設回報</h1>
+      <p class="sub">請提供清楚描述與照片，協助管委會提交給建商，作為改善依據。</p>
+
+      <iframe name="upload_frame" id="upload_frame" style="display:none;"></iframe>
+
+      <form id="reportForm"
+            action="https://script.google.com/macros/s/AKfycbwwlQKvcB5vUEJ0OassULP1xABAx36iZ61ervAwbju-xvH5xI1sSye7LYO98YpjDRzYPw/exec"
+            method="post" enctype="multipart/form-data"
+            target="upload_frame">
+        <div class="row">
+          <div>
+            <label>回報時間</label>
+            <input name="clientTime" id="clientTime" readonly />
+            <div class="hint">系統自動帶入（最終以後端紀錄為準）。</div>
+          </div>
+          <div>
+            <label>回報人</label>
+            <input name="reporter" />
+          </div>
+        </div>
+
+        <div class="row">
+          <div>
+            <label>聯絡方式</label>
+            <input name="contact" placeholder="市內電話 或 手機" />
+          </div>
+          <div>
+            <label>地點</label>
+            <select name="location" id="location" required>
+              <option value="">— 請選擇 —</option>
+              <option>A棟</option><option>B棟</option><option>C棟</option>
+              <option>D棟</option><option>E棟</option>
+              <option>大廳</option><option>停車場B1</option><option>停車場B2</option><option>停車場B3</option>
+              <option>其他</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="locNoteWrap" style="display:none">
+          <label>地點說明（選「其他」才需填）</label>
+          <input name="location_note" placeholder="請補充具體位置，如：E棟1F 垃圾間旁" />
+        </div>
+
+        <label>問題說明（最多 500 字）</label>
+        <textarea name="description" id="description" required placeholder="請描述問題具體情況、是否影響安全、持續時間…"></textarea>
+
+        <label style="margin-top:10px;">上傳照片（最多 5 張，單檔 ≤ 10MB）</label>
+        <input type="file" name="photos[]" id="photos" accept="image/*" multiple />
+
+        <div class="btns">
+          <button type="button" class="ghost" id="btnReset">清除</button>
+          <button type="submit" class="primary">送出回報</button>
+        </div>
+        <div id="status" class="status"></div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // 時間顯示
+    const clientTimeEl = document.getElementById('clientTime');
+    const fmt = d => new Intl.DateTimeFormat('zh-TW',{dateStyle:'medium', timeStyle:'short'}).format(d);
+    const tick = ()=> clientTimeEl.value = fmt(new Date());
+    tick(); setInterval(tick, 10000);
+
+    // 「其他」→ 顯示地點說明
+    const sel = document.getElementById('location');
+    const locNoteWrap = document.getElementById('locNoteWrap');
+    sel.addEventListener('change', ()=>{ locNoteWrap.style.display = (sel.value==='其他')? 'block':'none'; });
+
+    // 送出前做基本檢查（仍由原生 form 上傳）
+    const form = document.getElementById('reportForm');
+    const statusEl = document.getElementById('status');
+    document.getElementById('btnReset').addEventListener('click', ()=> form.reset());
+
+    form.addEventListener('submit', (e)=>{
+      const files = document.getElementById('photos').files || [];
+      if(!form.location.value){ e.preventDefault(); statusEl.textContent='請選擇地點。'; statusEl.className='status warn'; return; }
+      if(form.location.value==='其他' && !form.location_note.value.trim()){ e.preventDefault(); statusEl.textContent='請填寫地點說明。'; statusEl.className='status warn'; return; }
+      if(!form.description.value.trim()){ e.preventDefault(); statusEl.textContent='請填寫問題說明。'; statusEl.className='status warn'; return; }
+      if(files.length>5){ e.preventDefault(); statusEl.textContent='最多 5 張照片'; statusEl.className='status warn'; return; }
+      for(const f of files){ if(f.size/1024/1024>10){ e.preventDefault(); statusEl.textContent='單檔不可超過 10MB'; statusEl.className='status warn'; return; } }
+      statusEl.textContent='上傳中…請稍候';
+      statusEl.className='status';
+    });
+
+    // 接收 GAS 回傳（hidden iframe -> postMessage）
+    window.addEventListener('message', (ev)=>{
+      if(!ev.data || ev.data.source!=='gas') return;
+      if(ev.data.success){
+        statusEl.innerHTML = `✅ 已送出，案件編號：<b>${ev.data.caseId}</b>`;
+        statusEl.className='status ok';
+        form.reset();
+        // 重設地點說明欄位的顯示狀態，避免 reset 後狀態錯誤
+        locNoteWrap.style.display = 'none'; 
+        tick();
+      }else{
+        statusEl.textContent = `上傳失敗：${ev.data.message || '未知錯誤'}`;
+        statusEl.className='status err';
+      }
+    });
+  </script>
+</body>
+</html>
