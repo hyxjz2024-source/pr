@@ -1,0 +1,10 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>直送 GAS 測試</title>
+<form action="https://script.google.com/macros/s/你的_EXEC_URL/exec"
+      method="post" enctype="multipart/form-data" target="_blank">
+  <p>地點 <input name="location" value="B棟"></p>
+  <p>說明 <input name="description" value="直送測試"></p>
+  <p>相片 <input type="file" name="photos" accept="image/*" multiple></p>
+  <button>送出</button>
+</form>
