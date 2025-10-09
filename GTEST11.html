@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>住戶公設回報</title>
+  <style>
+    :root{
+      --bg:#f3f4fd; /* 淺紫色背景 */
+      --card:#ffffff;
+      --ink:#1e293b;
+      --muted:#64748b;
+      --brand:#6366f1; /* 藍紫色強調色 */
+      --ok:#10b981;
+      --warn:#f59e0b;
+      --err:#ef4444;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      background:var(--bg);
+      font-family:"Noto Sans TC",system-ui,-apple-system;
+      padding: 20px;
+    }
+    .wrap{
+      max-width:600px; /* 較窄，適合直式單欄 */
+      margin:20px auto;
+    }
+    .card{
+      background:var(--card);
+      border-radius:18px;
+      box-shadow:0 10px 30px rgba(30, 41, 59, 0.1);
+      padding:24px;
+    }
+    h1{margin:0 0 8px;font-size:26px;color:var(--ink)}
+    p.sub{margin:0 0 16px;color:var(--muted);font-size:15px;}
+
+    /* 欄位樣式 */
+    label{display:block;margin:16px 0 6px;font-weight:700;color:var(--ink)}
+    input,select,textarea{
+      width:100%;
+      padding:12px;
+      border:1px solid #e0e7ff; /* 淺藍邊框 */
+      border-radius:10px;
+      font-size:16px;
+      background:#f8f9ff; /* 接近淺紫色背景的輸入框 */
+      transition: border-color 0.2s;
+    }
+    input:focus, select:focus, textarea:focus {
+        border-color: var(--brand);
+        outline: none;
+    }
+    textarea{min-height:100px;resize:vertical}
+    
+    /* 按鈕樣式 */
+    .btns{display:flex;gap:12px;margin-top:24px}
+    button{
+      appearance:none;border:0;border-radius:10px;padding:12px 20px;
+      font-weight:700;cursor:pointer;flex-grow:1;
+      transition: background-color 0.2s;
+    }
+    .primary{background:var(--brand);color:#fff}
+    .primary:hover{background:#4f46e5}
+    .ghost{background:#eef2ff;color:var(--ink)}
+    .ghost:hover{background:#e0e7ff}
+
+    /* 狀態訊息 */
+    .status{margin-top:16px;padding:10px;border-radius:8px;}
+    .ok{color:var(--ok);background:#ecfdf5;} 
+    .warn{color:var(--warn);background:#fffbeb;} 
+    .err{color:var(--err);background:#fef2f2;}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1>住戶公設回報</h1>
+      <p class="sub">請提供清楚描述與照片，我們將儘速處理。</p>
+
+      <form id="reportForm" onsubmit="handleFormSubmit(event)">
+
+        <label>回報人</label>
+        <input name="reporter" placeholder="選填" />
+
+        <label>聯絡方式</label>
+        <input name="contact" placeholder="市內電話 或 手機 (選填)" />
+
+        <label>回報時間</label>
+        <input name="clientTime" id="clientTime" readonly />
+
+        <label>地點</label>
+        <select name="location" id="location" required>
+          <option value="">— 請選擇 —</option>
+          <option>A棟</option><option>B棟</option><option>C棟</option>
+          <option>D棟</option><option>E棟</option>
+          <option>大廳</option><option>停車場B1</option><option>停車場B2</option><option>停車場B3</option>
+          <option>其他</option>
+        </select>
+
+        <div id="locNoteWrap" style="display:none">
+          <label>地點說明（選「其他」才需填）</label>
+          <input name="location_note" placeholder="請補充具體位置，如：E棟1F 垃圾間旁" />
+        </div>
+
+        <label>問題說明（最多 500 字）</label>
+        <textarea name="description" id="description" required placeholder="請描述問題具體情況、是否影響安全、持續時間…"></textarea>
+
+        <label>上傳照片（最多 5 張，單檔 ≤ 10MB）</label>
+        <input type="file" name="photos" id="photos" accept="image/*" multiple />
+
+        <div class="btns">
+          <button type="button" class="ghost" onclick="document.getElementById('reportForm').reset()">清除</button>
+          <button type="submit" class="primary" id="submitBtn">送出回報</button>
+        </div>
+        <div id="status" class="status"></div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // 部署後的 Apps Script URL (請替換為你的 /exec URL)
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbwwlQKvcB5vUEJ0OassULP1xABAx36iZ61ervAwbju-xvH5xI1sSye7LYO98YpjDRzYPw/exec";
+    
+    const form = document.getElementById('reportForm');
+    const statusEl = document.getElementById('status');
+    const submitBtn = document.getElementById('submitBtn');
+    const photosInput = document.getElementById('photos');
+    const locSelect = document.getElementById('location');
+    const locNoteWrap = document.getElementById('locNoteWrap');
+
+    // 1. 時間顯示
+    const clientTimeEl = document.getElementById('clientTime');
+    const fmt = d => new Intl.DateTimeFormat('zh-TW',{dateStyle:'medium', timeStyle:'short'}).format(d);
+    const tick = ()=> clientTimeEl.value = fmt(new Date());
+    tick(); setInterval(tick, 10000);
+
+    // 2. 「其他」→ 顯示地點說明
+    locSelect.addEventListener('change', ()=>{ locNoteWrap.style.display = (locSelect.value==='其他')? 'block':'none'; });
+
+    // 3. 表單送出處理 (手動使用 fetch API)
+    async function handleFormSubmit(e) {
+        e.preventDefault();
+        statusEl.className = 'status';
+        statusEl.textContent = '';
+        
+        const files = photosInput.files || [];
+        
+        // --- 基本驗證 ---
+        if (!locSelect.value) { statusEl.textContent = '請選擇地點。'; statusEl.className = 'status warn'; return; }
+        if (locSelect.value === '其他' && !form.location_note.value.trim()) { statusEl.textContent = '請填寫地點說明。'; statusEl.className = 'status warn'; return; }
+        if (!form.description.value.trim()) { statusEl.textContent = '請填寫問題說明。'; statusEl.className = 'status warn'; return; }
+        if (files.length > 5) { statusEl.textContent = '最多 5 張照片'; statusEl.className = 'status warn'; return; }
+        for (const f of files) { 
+            if (f.size / 1024 / 1024 > 10) { statusEl.textContent = `照片 "${f.name}" 超過 10MB 限制。`; statusEl.className = 'status warn'; return; } 
+        }
+
+        // --- 準備資料 ---
+        statusEl.textContent = '準備上傳中...';
+        submitBtn.disabled = true;
+        
+        const formData = new FormData(form);
+        
+        // 關鍵步驟：如果你的 Apps Script 程式碼希望檔案鍵名為 photos[0], photos[1]
+        // 則需要手動調整 FormData (但通常 Apps Script 能處理多個同名欄位)
+        
+        // 為了確保你的 GAS 能正確處理，我們手動將檔案重新命名為 file0, file1, ...
+        // 如果 GAS 不動，FormData(form) 會將檔案放入名為 "photos" 的欄位
+        // 由於我們不修改 GAS 程式碼，我們將依賴 GAS 對 "photos" 欄位的處理
+        // 我們將保持簡單，直接使用 FormData(form)
+        
+        // 如果你需要更細緻的控制，可參考以下手動添加檔案方式（但暫時不啟用，以最小化變動）
+        // const manualFormData = new FormData();
+        // for (let pair of formData.entries()) {
+        //     if (pair[0] !== 'photos') {
+        //         manualFormData.append(pair[0], pair[1]);
+        //     }
+        // }
+        // Array.from(files).forEach((f, i) => {
+        //     manualFormData.append('photos', f); // 這裡我們讓所有檔案都叫 'photos'，和原 form 提交一樣
+        // });
+
+
+        // --- 送出資料 ---
+        statusEl.textContent = '上傳中…請稍候 (請勿關閉或刷新)';
+        try {
+            const response = await fetch(GAS_URL, {
+                method: 'POST',
+                body: formData, // 直接送出 FormData
+                // fetch API 在送出 FormData 時會自動設置 Content-Type: multipart/form-data
+            });
+
+            // Apps Script 回傳的內容是 JSON 文本，但被包裹在 HTML 裡
+            const htmlText = await response.text();
+            
+            // 嘗試從 HTML 內容中提取 JSON
+            const jsonMatch = htmlText.match(/postMessage\(.*?, '\*'\);/);
+            if (!jsonMatch) throw new Error('伺服器回傳格式錯誤。');
+            
+            let jsonString = jsonMatch[0].replace(/postMessage\(Object\.assign\(\{source:'gas'\}, (.*)\), '\*'\);/, '$1');
+            jsonString = jsonString.replace(/\\u003c/g, '<'); // 修正 HTML 轉義
+
+            const data = JSON.parse(jsonString);
+
+            if (data.success) {
+                statusEl.innerHTML = `✅ **已送出**，案件編號：<b>${data.caseId}</b>`;
+                statusEl.className = 'status ok';
+                form.reset();
+                locNoteWrap.style.display = 'none'; // 重設「其他」欄位顯示狀態
+                tick();
+            } else {
+                statusEl.textContent = `上傳失敗：${data.message || '未知錯誤'}`;
+                statusEl.className = 'status err';
+            }
+
+        } catch (error) {
+            statusEl.textContent = `網路錯誤或解析失敗：${error.message}`;
+            statusEl.className = 'status err';
+            console.error(error);
+        } finally {
+            submitBtn.disabled = false;
+        }
+    }
+  </script>
+</body>
+</html>
