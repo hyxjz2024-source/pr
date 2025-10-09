@@ -23,7 +23,7 @@
       padding: 20px;
     }
     .wrap{
-      max-width:600px; /* 較窄，適合直式單欄 */
+      max-width:600px; /* 適合直式單欄 */
       margin:20px auto;
     }
     .card{
@@ -40,10 +40,10 @@
     input,select,textarea{
       width:100%;
       padding:12px;
-      border:1px solid #e0e7ff; /* 淺藍邊框 */
+      border:1px solid #e0e7ff; 
       border-radius:10px;
       font-size:16px;
-      background:#f8f9ff; /* 接近淺紫色背景的輸入框 */
+      background:#f8f9ff;
       transition: border-color 0.2s;
     }
     input:focus, select:focus, textarea:focus {
@@ -74,17 +74,22 @@
 <body>
   <div class="wrap">
     <div class="card">
-      <h1>住戶公設回報</h1>
+      <h1>住戶公設回報1</h1>
       <p class="sub">請提供清楚描述與照片，我們將儘速處理。</p>
 
-      <form id="reportForm" onsubmit="handleFormSubmit(event)">
+      <iframe name="upload_frame" id="upload_frame" style="display:none;"></iframe>
+
+      <form id="reportForm"
+            action="https://script.google.com/macros/s/AKfycbwwlQKvcB5vUEJ0OassULP1xABAx36iZ61ervAwbju-xvH5xI1sSye7LYO98YpjDRzYPw/exec"
+            method="post" enctype="multipart/form-data"
+            target="upload_frame">
 
         <label>回報人</label>
         <input name="reporter" placeholder="選填" />
 
         <label>聯絡方式</label>
         <input name="contact" placeholder="市內電話 或 手機 (選填)" />
-
+        
         <label>回報時間</label>
         <input name="clientTime" id="clientTime" readonly />
 
@@ -106,11 +111,11 @@
         <textarea name="description" id="description" required placeholder="請描述問題具體情況、是否影響安全、持續時間…"></textarea>
 
         <label>上傳照片（最多 5 張，單檔 ≤ 10MB）</label>
-        <input type="file" name="photos" id="photos" accept="image/*" multiple />
+        <input type="file" name="photos[]" id="photos" accept="image/*" multiple />
 
         <div class="btns">
-          <button type="button" class="ghost" onclick="document.getElementById('reportForm').reset()">清除</button>
-          <button type="submit" class="primary" id="submitBtn">送出回報</button>
+          <button type="button" class="ghost" id="btnReset">清除</button>
+          <button type="submit" class="primary">送出回報</button>
         </div>
         <div id="status" class="status"></div>
       </form>
@@ -118,108 +123,61 @@
   </div>
 
   <script>
-    // 部署後的 Apps Script URL (請替換為你的 /exec URL)
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbwwlQKvcB5vUEJ0OassULP1xABAx36iZ61ervAwbju-xvH5xI1sSye7LYO98YpjDRzYPw/exec";
-    
-    const form = document.getElementById('reportForm');
-    const statusEl = document.getElementById('status');
-    const submitBtn = document.getElementById('submitBtn');
-    const photosInput = document.getElementById('photos');
-    const locSelect = document.getElementById('location');
-    const locNoteWrap = document.getElementById('locNoteWrap');
-
-    // 1. 時間顯示
+    // 時間顯示 (不變)
     const clientTimeEl = document.getElementById('clientTime');
     const fmt = d => new Intl.DateTimeFormat('zh-TW',{dateStyle:'medium', timeStyle:'short'}).format(d);
     const tick = ()=> clientTimeEl.value = fmt(new Date());
     tick(); setInterval(tick, 10000);
 
-    // 2. 「其他」→ 顯示地點說明
-    locSelect.addEventListener('change', ()=>{ locNoteWrap.style.display = (locSelect.value==='其他')? 'block':'none'; });
+    // 「其他」→ 顯示地點說明 (不變)
+    const sel = document.getElementById('location');
+    const locNoteWrap = document.getElementById('locNoteWrap');
+    sel.addEventListener('change', ()=>{ locNoteWrap.style.display = (sel.value==='其他')? 'block':'none'; });
 
-    // 3. 表單送出處理 (手動使用 fetch API)
-    async function handleFormSubmit(e) {
-        e.preventDefault();
-        statusEl.className = 'status';
-        statusEl.textContent = '';
-        
-        const files = photosInput.files || [];
-        
-        // --- 基本驗證 ---
-        if (!locSelect.value) { statusEl.textContent = '請選擇地點。'; statusEl.className = 'status warn'; return; }
-        if (locSelect.value === '其他' && !form.location_note.value.trim()) { statusEl.textContent = '請填寫地點說明。'; statusEl.className = 'status warn'; return; }
-        if (!form.description.value.trim()) { statusEl.textContent = '請填寫問題說明。'; statusEl.className = 'status warn'; return; }
-        if (files.length > 5) { statusEl.textContent = '最多 5 張照片'; statusEl.className = 'status warn'; return; }
-        for (const f of files) { 
-            if (f.size / 1024 / 1024 > 10) { statusEl.textContent = `照片 "${f.name}" 超過 10MB 限制。`; statusEl.className = 'status warn'; return; } 
-        }
+    // 送出前做基本檢查（使用原生 form 上傳）
+    const form = document.getElementById('reportForm');
+    const statusEl = document.getElementById('status');
+    const locNoteInput = form.location_note; // 取得地點說明 input 元素
 
-        // --- 準備資料 ---
-        statusEl.textContent = '準備上傳中...';
-        submitBtn.disabled = true;
-        
-        const formData = new FormData(form);
-        
-        // 關鍵步驟：如果你的 Apps Script 程式碼希望檔案鍵名為 photos[0], photos[1]
-        // 則需要手動調整 FormData (但通常 Apps Script 能處理多個同名欄位)
-        
-        // 為了確保你的 GAS 能正確處理，我們手動將檔案重新命名為 file0, file1, ...
-        // 如果 GAS 不動，FormData(form) 會將檔案放入名為 "photos" 的欄位
-        // 由於我們不修改 GAS 程式碼，我們將依賴 GAS 對 "photos" 欄位的處理
-        // 我們將保持簡單，直接使用 FormData(form)
-        
-        // 如果你需要更細緻的控制，可參考以下手動添加檔案方式（但暫時不啟用，以最小化變動）
-        // const manualFormData = new FormData();
-        // for (let pair of formData.entries()) {
-        //     if (pair[0] !== 'photos') {
-        //         manualFormData.append(pair[0], pair[1]);
-        //     }
-        // }
-        // Array.from(files).forEach((f, i) => {
-        //     manualFormData.append('photos', f); // 這裡我們讓所有檔案都叫 'photos'，和原 form 提交一樣
-        // });
+    document.getElementById('btnReset').addEventListener('click', ()=> {
+        form.reset();
+        locNoteWrap.style.display = 'none'; // 重設「其他」欄位顯示狀態
+    });
 
+    form.addEventListener('submit', (e)=>{
+      const files = document.getElementById('photos').files || [];
+      if(!form.location.value){ e.preventDefault(); statusEl.textContent='請選擇地點。'; statusEl.className='status warn'; return; }
+      if(form.location.value==='其他' && !locNoteInput.value.trim()){ e.preventDefault(); statusEl.textContent='請填寫地點說明。'; statusEl.className='status warn'; return; }
+      if(!form.description.value.trim()){ e.preventDefault(); statusEl.textContent='請填寫問題說明。'; statusEl.className='status warn'; return; }
+      if(files.length>5){ e.preventDefault(); statusEl.textContent='最多 5 張照片'; statusEl.className='status warn'; return; }
+      for(const f of files){ if(f.size/1024/1024>10){ e.preventDefault(); statusEl.textContent=`照片 "${f.name}" 超過 10MB 限制。`; statusEl.className='status warn'; return; } }
+      
+      statusEl.textContent='上傳中…請稍候 (請勿關閉或刷新)';
+      statusEl.className='status';
+      
+      // 在提交前禁用按鈕，防止重複提交
+      document.querySelector('.primary').disabled = true;
+    });
 
-        // --- 送出資料 ---
-        statusEl.textContent = '上傳中…請稍候 (請勿關閉或刷新)';
-        try {
-            const response = await fetch(GAS_URL, {
-                method: 'POST',
-                body: formData, // 直接送出 FormData
-                // fetch API 在送出 FormData 時會自動設置 Content-Type: multipart/form-data
-            });
+    // 接收 GAS 回傳（hidden iframe -> postMessage）
+    window.addEventListener('message', (ev)=>{
+      if(!ev.data || ev.data.source!=='gas') return;
+      document.querySelector('.primary').disabled = false; // 重新啟用按鈕
 
-            // Apps Script 回傳的內容是 JSON 文本，但被包裹在 HTML 裡
-            const htmlText = await response.text();
-            
-            // 嘗試從 HTML 內容中提取 JSON
-            const jsonMatch = htmlText.match(/postMessage\(.*?, '\*'\);/);
-            if (!jsonMatch) throw new Error('伺服器回傳格式錯誤。');
-            
-            let jsonString = jsonMatch[0].replace(/postMessage\(Object\.assign\(\{source:'gas'\}, (.*)\), '\*'\);/, '$1');
-            jsonString = jsonString.replace(/\\u003c/g, '<'); // 修正 HTML 轉義
-
-            const data = JSON.parse(jsonString);
-
-            if (data.success) {
-                statusEl.innerHTML = `✅ **已送出**，案件編號：<b>${data.caseId}</b>`;
-                statusEl.className = 'status ok';
-                form.reset();
-                locNoteWrap.style.display = 'none'; // 重設「其他」欄位顯示狀態
-                tick();
-            } else {
-                statusEl.textContent = `上傳失敗：${data.message || '未知錯誤'}`;
-                statusEl.className = 'status err';
-            }
-
-        } catch (error) {
-            statusEl.textContent = `網路錯誤或解析失敗：${error.message}`;
-            statusEl.className = 'status err';
-            console.error(error);
-        } finally {
-            submitBtn.disabled = false;
-        }
-    }
+      if(ev.data.success){
+        statusEl.innerHTML = `✅ 已送出，案件編號：<b>${ev.data.caseId}</b>`;
+        statusEl.className='status ok';
+        form.reset();
+        locNoteWrap.style.display = 'none'; // 重設「其他」欄位顯示狀態
+        tick();
+      }else{
+        // 顯示更詳細的錯誤訊息
+        let msg = ev.data.message || '未知錯誤';
+        if(ev.data.debug && ev.data.debug.error) msg += ` (Debug: ${ev.data.debug.error.substring(0, 50)}...)`;
+        statusEl.textContent = `上傳失敗：${msg}`;
+        statusEl.className='status err';
+      }
+    });
   </script>
 </body>
 </html>
