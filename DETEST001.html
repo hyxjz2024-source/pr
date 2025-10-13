@@ -71,6 +71,7 @@
             margin-top: 10px;
             border-radius: 8px;
             display: none;
+            border: 2px solid #e0e0e0;
         }
         .submit-btn {
             background: linear-gradient(135deg, #3498db, #2980b9);
@@ -111,6 +112,13 @@
             display: none;
             text-align: center;
             margin: 10px 0;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        .required::after {
+            content: " *";
+            color: #e74c3c;
         }
     </style>
 </head>
@@ -126,17 +134,17 @@
             
             <form id="repairForm">
                 <div class="form-group">
-                    <label for="name">報修人姓名 *</label>
+                    <label for="name" class="required">報修人姓名</label>
                     <input type="text" id="name" name="name" required placeholder="請輸入您的姓名">
                 </div>
                 
                 <div class="form-group">
                     <label for="room">住戶編號/房號</label>
-                    <input type="text" id="room" name="room" placeholder="例如：A棟-12F">
+                    <input type="text" id="room" name="room" placeholder="例如：B6-6">
                 </div>
                 
                 <div class="form-group">
-                    <label for="issueType">問題類型 *</label>
+                    <label for="issueType" class="required">問題類型</label>
                     <select id="issueType" name="issueType" required>
                         <option value="">請選擇問題類型</option>
                         <option value="電梯問題">電梯問題</option>
@@ -145,12 +153,13 @@
                         <option value="門禁系統">門禁系統</option>
                         <option value="公共照明">公共照明</option>
                         <option value="環境清潔">環境清潔</option>
+                        <option value="消防安全">消防安全</option>
                         <option value="其他">其他</option>
                     </select>
                 </div>
                 
                 <div class="form-group">
-                    <label for="description">問題描述 *</label>
+                    <label for="description" class="required">問題描述</label>
                     <textarea id="description" name="description" required placeholder="請詳細描述遇到的問題..."></textarea>
                 </div>
                 
@@ -175,18 +184,28 @@
     </div>
 
     <script>
-        // 設定您的 GAS Web App URL
+        // 設定您的 GAS Web App URL - 請替換成您的實際 URL
         const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzbaoTr_aWJkfIY4Z1Kimo9gj2eamGMNd_UHFKgaBDaKIJBc8Epbamg6QaYNiVh7omgwg/exec';
 
-        // 圖片預覽
+        // 圖片預覽功能
         document.getElementById('photo').addEventListener('change', function(e) {
             const file = e.target.files[0];
             const preview = document.getElementById('photoPreview');
             
             if (file) {
+                // 檢查檔案大小（限制 5MB）
                 if (file.size > 5 * 1024 * 1024) {
-                    showMessage('檔案大小超過 5MB', 'error');
+                    showMessage('檔案大小超過 5MB 限制', 'error');
                     this.value = '';
+                    preview.style.display = 'none';
+                    return;
+                }
+                
+                // 檢查檔案類型
+                if (!file.type.startsWith('image/')) {
+                    showMessage('請上傳圖片檔案 (JPEG, PNG, GIF)', 'error');
+                    this.value = '';
+                    preview.style.display = 'none';
                     return;
                 }
                 
@@ -195,110 +214,168 @@
                     preview.src = e.target.result;
                     preview.style.display = 'block';
                 };
+                reader.onerror = function() {
+                    showMessage('圖片讀取失敗', 'error');
+                    preview.style.display = 'none';
+                };
                 reader.readAsDataURL(file);
             } else {
                 preview.style.display = 'none';
             }
         });
 
-        // 表單提交
-        document.getElementById('repairForm').addEventListener('submit', async function(e) {
+        // 表單提交處理
+        document.getElementById('repairForm').addEventListener('submit', function(e) {
             e.preventDefault();
             
             const submitBtn = document.getElementById('submitBtn');
             const loading = document.getElementById('loading');
-            
-            // 基本驗證
             const name = document.getElementById('name').value.trim();
+            const room = document.getElementById('room').value.trim();
             const issueType = document.getElementById('issueType').value;
             const description = document.getElementById('description').value.trim();
+            const contact = document.getElementById('contact').value.trim();
             
-            if (!name || !issueType || !description) {
-                showMessage('請填寫所有必填欄位', 'error');
+            console.log('開始提交表單...');
+            
+            // 基本驗證
+            if (!name) {
+                showMessage('請填寫報修人姓名', 'error');
+                document.getElementById('name').focus();
                 return;
             }
             
-            // 準備提交資料
-            submitBtn.disabled = true;
-            loading.style.display = 'block';
-            
-            const formData = {
-                name: name,
-                room: document.getElementById('room').value.trim(),
-                issueType: issueType,
-                description: description,
-                contact: document.getElementById('contact').value.trim(),
-                photo: null
-            };
-            
-            // 處理照片
-            const photoFile = document.getElementById('photo').files[0];
-            if (photoFile) {
-                try {
-                    formData.photo = await fileToBase64(photoFile);
-                } catch (error) {
-                    showMessage('照片處理失敗', 'error');
-                    submitBtn.disabled = false;
-                    loading.style.display = 'none';
-                    return;
-                }
+            if (!issueType) {
+                showMessage('請選擇問題類型', 'error');
+                document.getElementById('issueType').focus();
+                return;
             }
             
-            // 發送到 Google Apps Script
+            if (!description) {
+                showMessage('請填寫問題描述', 'error');
+                document.getElementById('description').focus();
+                return;
+            }
+            
+            // 顯示載入狀態
+            submitBtn.disabled = true;
+            loading.style.display = 'block';
+            hideMessage();
+            
+            // 如果有選擇檔案，轉換為 base64
+            const fileInput = document.getElementById('photo');
+            if (fileInput.files[0]) {
+                console.log('處理照片上傳...');
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const base64 = e.target.result.split(',')[1];
+                    console.log('照片轉換完成，大小:', base64.length, '字元');
+                    submitFormData(name, room, issueType, description, contact, base64);
+                };
+                reader.onerror = function() {
+                    console.error('照片讀取失敗');
+                    showMessage('照片讀取失敗，請重新選擇檔案', 'error');
+                    submitBtn.disabled = false;
+                    loading.style.display = 'none';
+                };
+                reader.readAsDataURL(fileInput.files[0]);
+            } else {
+                console.log('沒有照片，直接提交表單資料');
+                submitFormData(name, room, issueType, description, contact, null);
+            }
+        });
+        
+        function submitFormData(name, room, issueType, description, contact, fileBase64) {
+            const data = {
+                name: name,
+                room: room,
+                issueType: issueType,
+                description: description,
+                contact: contact,
+                photo: fileBase64
+            };
+            
+            console.log('提交的資料:', {
+                name: name,
+                room: room, 
+                issueType: issueType,
+                description: description.substring(0, 50) + (description.length > 50 ? '...' : ''),
+                contact: contact,
+                hasPhoto: !!fileBase64,
+                photoSize: fileBase64 ? fileBase64.length : 0
+            });
+            
+            // 使用 fetch 發送請求到 Google Apps Script
             fetch(GAS_WEB_APP_URL, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(formData)
+                body: JSON.stringify(data)
             })
-            .then(response => response.json())
+            .then(response => {
+                console.log('伺服器回應狀態:', response.status, response.statusText);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
             .then(data => {
+                console.log('伺服器回應資料:', data);
+                
                 if (data.success) {
                     showMessage('✅ ' + data.message, 'success');
+                    // 清空表單
                     document.getElementById('repairForm').reset();
                     document.getElementById('photoPreview').style.display = 'none';
+                    
+                    // 3秒後隱藏成功訊息
+                    setTimeout(() => {
+                        hideMessage();
+                    }, 5000);
                 } else {
                     showMessage('❌ ' + data.message, 'error');
                 }
             })
             .catch(error => {
+                console.error('請求失敗:', error);
                 showMessage('❌ 提交失敗：' + error.message, 'error');
             })
             .finally(() => {
-                submitBtn.disabled = false;
-                loading.style.display = 'none';
-            });
-        });
-
-        // 工具函數
-        function fileToBase64(file) {
-            return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.onload = () => {
-                    const base64 = reader.result.split(',')[1];
-                    resolve(base64);
-                };
-                reader.onerror = reject;
-                reader.readAsDataURL(file);
+                // 恢復按鈕狀態
+                document.getElementById('submitBtn').disabled = false;
+                document.getElementById('loading').style.display = 'none';
             });
         }
-
+        
         function showMessage(message, type) {
             const messageDiv = document.getElementById('message');
             messageDiv.className = 'message ' + type;
             messageDiv.innerHTML = message;
             messageDiv.style.display = 'block';
             
-            if (type === 'success') {
-                setTimeout(() => {
-                    messageDiv.style.display = 'none';
-                }, 5000);
-            }
+            // 自動滾動到訊息位置
+            messageDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+        
+        function hideMessage() {
+            const messageDiv = document.getElementById('message');
+            messageDiv.style.display = 'none';
         }
 
-        // 測試連接
+        // 頁面載入完成
         console.log('社區報修系統已載入');
+        console.log('GAS Web App URL:', GAS_WEB_APP_URL);
+        
+        // 測試連接
+        fetch(GAS_WEB_APP_URL)
+            .then(response => response.json())
+            .then(data => {
+                console.log('API 連接測試成功:', data);
+            })
+            .catch(error => {
+                console.warn('API 連接測試失敗:', error);
+            });
     </script>
 </body>
 </html>
