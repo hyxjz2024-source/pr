@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>公設回報（上傳圖片）</title>
+  <style>
+    body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans TC", Arial;
+           max-width: 680px; margin: 32px auto; padding: 0 16px; }
+    .row { margin: 12px 0; }
+    input[type="text"], textarea, button { width: 100%; padding: 10px; }
+    .hint { color:#666; font-size: 13px; }
+  </style>
+</head>
+<body>
+  <h2>公設回報：一格文字 + 一張圖片</h2>
+
+  <!-- 將 action 換成你部署後的 GAS Web App URL -->
+  <form method="post" enctype="multipart/form-data" action="https://script.google.com/macros/s/AKfycbz8Xk5aKTgQzwnLVLBnWvm9De7iVJJsrTDGr8UBFsIPZWPLgf4mVPlJy7kropkBdc44/exec">
+    <div class="row">
+      <label>說明文字</label>
+      <input type="text" name="desc" placeholder="例如：D3-8F 電梯面板脫落" required />
+    </div>
+    <div class="row">
+      <label>上傳圖片（1 張）</label>
+      <input type="file" name="photo" accept="image/*" required />
+      <div class="hint">建議 10MB 以內。先只做單張，穩定後再開多張。</div>
+    </div>
+    <div class="row">
+      <button type="submit">送出</button>
+    </div>
+  </form>
+
+  <p class="hint">送出後會顯示「上傳成功/失敗」以及圖片連結。</p>
+</body>
+</html>
