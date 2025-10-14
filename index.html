@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <link rel="icon" type="image/x-icon" href="https://hyxjz.blogspot.com/favicon.ico">
-  <title>新加州｜公設回報查詢 </title>
+  <title>新加州｜公設回報查詢</title>
   <style>
     :root{
       --base-font: clamp(18px, 2.5vw, 22px);
@@ -132,7 +132,7 @@
     .pager button{ padding:var(--pad-md); border:2px solid #dbe4ff; border-radius:14px; background:#fff; min-width:clamp(44px,8vw,56px); font-weight:800; font-size:clamp(.9rem,2vw,1.1rem); cursor:pointer; transition:.2s; }
     .pager button:hover:not([disabled]){ background:var(--chip); border-color:var(--brand); }
     .pager button[disabled]{ opacity:.45; cursor:not-allowed; }
-    .pager .now{ background:#e6eeff; border-color:#cfe0ff; color:var(--chip-ink); }
+    .pager .now{ background:#e6eeff; border-color:#cfe0ff; color: var(--chip-ink); }
 
     .loading{ display:inline-block; width:20px; height:20px; border:3px solid #f3f3f3; border-top:3px solid var(--brand); border-radius:50%; animation:spin 1s linear infinite; }
     @keyframes spin{ 0%{ transform:rotate(0deg) } 100%{ transform:rotate(360deg) } }
@@ -166,10 +166,9 @@
   </div>
 
   <script>
-    // ======= 這兩個請換成你這次部署的 /exec =======
+    // ✅ 把這兩個換成你目前部署的 /exec（兩個相同）
     const API_URL  = "https://script.google.com/macros/s/AKfycbzYWtP_YiZQwnO7ls0YycIlYPHq7AB21crgbk4Z4L3mkoTINB8rR4mQwrGgW7tahmM/exec";
     const FORM_URL = "https://script.google.com/macros/s/AKfycbzYWtP_YiZQwnO7ls0YycIlYPHq7AB21crgbk4Z4L3mkoTINB8rR4mQwrGgW7tahmM/exec";
-    // ===============================================
 
     document.getElementById('btnBack').href = FORM_URL;
 
@@ -241,9 +240,9 @@
         b.onclick=fn; 
         return b;
       };
+      const pagesTotal = Math.max(1, Math.ceil(FILTERED.length / pageSize));
       elPager.appendChild(mk('« 最前', page===1, ()=>{page=1; renderPage(FILTERED,pageSize)}));
       elPager.appendChild(mk('‹ 上一頁', page===1, ()=>{page--; renderPage(FILTERED,pageSize)}));
-      const pagesTotal = Math.max(1, Math.ceil(FILTERED.length / pageSize));
       const show=5, startP=Math.max(1,page-Math.floor(show/2)), endP=Math.min(pagesTotal, startP+show-1);
       for(let p=startP;p<=endP;p++) elPager.appendChild(mk(String(p), false, ()=>{page=p; renderPage(FILTERED,pageSize)}, p===page?'now':''));
       elPager.appendChild(mk('下一頁 ›', page>=pagesTotal, ()=>{page++; renderPage(FILTERED,pageSize)}));
@@ -276,6 +275,7 @@
       const url = `${API_URL}?api=public&limit=500&_=${Date.now()}`;
       return fetch(url)
         .then(r => {
+
           if (!r.ok) throw new Error('HTTP ' + r.status);
           return r.json();
         })
@@ -305,5 +305,23 @@
       elList.innerHTML = '<div class="empty"><div class="loading"></div> 載入中…</div>';
       elReload.disabled = true; elReload.textContent = '載入中…';
       loadViaFetch()
-        .catch(() =>
+        .catch(() => loadViaJSONP())
+        .catch(err => {
+          console.error(err);
+          elList.innerHTML = '<div class="empty">載入失敗，請稍後再試。</div>';
+        })
+        .finally(() => {
+          elReload.disabled = false;
+          elReload.textContent = '🔄 重新載入';
+        });
+    }
 
+    elQ.addEventListener('input', filter);
+    elLoc.addEventListener('change', filter);
+    elReload.addEventListener('click', load);
+    elPageSz.addEventListener('change', ()=>{ page=1; renderPage(FILTERED, Number(elPageSz.value||10)); });
+
+    load(); // 初始載入
+  </script>
+</body>
+</html>
