@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <link rel="icon" href="https://hyxjz.blogspot.com/favicon.ico">
-  <title>新加州｜住戶公設回報</title>
+  <title>新加州｜住戶公設回報（嵌入版）</title>
   <style>
     :root{
       --ink:#0f172a; --muted:#64748b; --brand:#3b82f6; --bg:#eef5ff;
@@ -21,15 +21,25 @@
       display:flex; justify-content:flex-end; align-items:center; gap:var(--gap); margin-bottom:var(--gap);
     }
     .btn{
-      appearance:none; border:0; border-radius:12px; padding:10px 14px; cursor:pointer; font-weight:800;
-      text-decoration:none; display:inline-flex; align-items:center; gap:8px; background:#e8f0ff; color:#0b1f44;
+      appearance:none; border:0; border-radius:12px; padding:10px 14px;
+      cursor:pointer; text-decoration:none; display:inline-flex; align-items:center; gap:8px;
     }
-    .btn.primary{ background:var(--brand); color:#fff; }
+    .btn.records{
+      background:#ede9fe;   /* 淺紫底 */
+      color:#5b21b6;        /* 深紫字 */
+      font-weight:400;      /* 移除粗體 */
+    }
     .card{
       background:#fff; border-radius:18px; box-shadow:0 10px 30px rgba(3,7,18,.10);
       padding: clamp(10px, 2vw, 14px);
     }
-    .frame-wrap{width:100%; height:calc(100vh - 180px); min-height:600px; border-radius:14px; overflow:hidden}
+    .frame-wrap{
+      width:100%;
+      height:calc(100vh - 80px); /* 增加可視高度，讓底部多出空間 */
+      min-height:700px;
+      border-radius:14px;
+      overflow:hidden;
+    }
     iframe{width:100%; height:100%; border:0; display:block}
     .fallback{margin-top:10px; color:var(--muted); font-size:14px}
     .fallback a{color:var(--brand); font-weight:700; text-decoration:none}
@@ -41,7 +51,7 @@
       line-height: 1.6;
     }
     @media (max-width:480px){
-      .frame-wrap{height:calc(100vh - 160px); min-height:70vh}
+      .frame-wrap{height:calc(100vh - 60px); min-height:600px}
       .btn{padding:12px 14px}
     }
   </style>
@@ -49,7 +59,7 @@
 <body>
   <div class="wrap">
     <div class="topbar">
-      <a class="btn" id="btnRecords" href="#" target="_blank" rel="noopener">📋 請查看已回報紀錄，避免重複回報</a>
+      <a class="btn records" id="btnRecords" href="#" target="_blank" rel="noopener">📋 請查看已回報紀錄，避免重複回報</a>
     </div>
 
     <div class="card">
