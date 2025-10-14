@@ -20,7 +20,7 @@
     .wrap{
       max-width:min(1100px,100% - clamp(16px,4vw,40px));
       margin:0 auto;
-      padding:clamp(12px,3vw,20px) 0;
+      padding:clamp(12px,3vw,20px) 0 40px; /* 底部多留空間 */
     }
     .topbar{
       display:flex; justify-content:flex-end; align-items:center; gap:var(--gap); margin-bottom:var(--gap);
@@ -30,24 +30,39 @@
       cursor:pointer; text-decoration:none; display:inline-flex; align-items:center; gap:8px;
     }
     .btn.records{
-  background:#ede9fe;      /* 淺紫底 */
-  color:#5b21b6;           /* 深紫字 */
-  font-weight:400;
-  box-shadow: 0 2px 6px rgba(91, 33, 182, 0.25); /* 淺淺的紫色陰影 */
+      background:#ede9fe; color:#5b21b6; font-weight:400;
+      box-shadow: 0 2px 6px rgba(91, 33, 182, 0.25); /* 淺紫陰影 */
     }
+
+    /* 新增：上傳提醒條 */
+    .notice{
+      display:flex; align-items:flex-start; gap:10px;
+      background:#fff8e1; color:#7a5d00;
+      border:1px solid #ffe9a8; border-radius:12px;
+      padding:12px 14px; margin: 0 0 10px;
+      box-shadow: 0 2px 10px rgba(122,93,0,.08);
+      font-size: 14px; line-height: 1.6;
+    }
+    .notice .dot{
+      width:10px; height:10px; border-radius:50%;
+      background:#f59e0b; margin-top:6px; flex-shrink:0;
+      box-shadow:0 0 0 4px rgba(245,158,11,.15);
+    }
+
     .card{
       background:#fff; border-radius:18px; box-shadow:0 10px 30px rgba(3,7,18,.10);
       padding: clamp(10px, 2vw, 14px);
     }
     .frame-wrap{
       width:100%;
-      min-height:1500px; /* 增加固定高度，讓整頁往下延伸 */
+      /* 改成視窗高度 + 額外空間，減少內部捲軸帶來的視覺切割 */
+      min-height: calc(100vh + 300px);
       border-radius:14px;
       overflow:visible;
     }
     iframe{
       width:100%;
-      height:1500px; /* 與上方一致，避免出現內部捲軸 */
+      height: calc(100vh + 300px); /* 與上方一致 */
       border:0;
       display:block;
     }
@@ -60,6 +75,12 @@
       color: var(--muted);
       line-height: 1.6;
     }
+
+    @media (max-width:480px){
+      .wrap{padding-bottom:52px}
+      .btn{padding:12px 14px}
+      .notice{font-size:13px}
+    }
   </style>
 </head>
 <body>
@@ -67,6 +88,8 @@
     <div class="topbar">
       <a class="btn records" id="btnRecords" href="#" target="_blank" rel="noopener">▶ 點此看回報紀錄，避免重複回報</a>
     </div>
+
+ 
 
     <div class="card">
       <div class="frame-wrap">
@@ -82,6 +105,14 @@
         <a id="openNew" href="#" target="_blank" rel="noopener">在新分頁開啟表單</a>。
       </div>
     </div>
+	     <!-- 新增：恆常提醒（外層可見） -->
+    <div class="notice" role="status" aria-live="polite">
+      <span class="dot" aria-hidden="true"></span>
+      <div>
+        當圖片「上傳中...」請耐心等候，直到頁面顯示「案件編號」再離開。<br>
+        若一次上傳多張照片或檔案較大，處理時間會較久，請勿關閉視窗或重新整理。
+      </div>
+    </div>
 
     <div class="footer">
       感謝各位鄰居們的協助，以上資料將提交給驗收廠商，<br>
@@ -94,16 +125,16 @@
     const RECORD_URL = "https://hyxjz2024-source.github.io/pr/review.html";
 
     document.getElementById('btnRecords').href = RECORD_URL;
+
     const frame = document.getElementById('formFrame');
     frame.src = FORM_URL;
 
     frame.addEventListener('error', () => showFallback());
     frame.addEventListener('load', () => {
+      // 載入成功就把 fallback 藏起來
       setTimeout(() => {
-        try {
-          document.getElementById('fallback').hidden = true;
-        } catch (e) {}
-      }, 1200);
+        try { document.getElementById('fallback').hidden = true; } catch (e) {}
+      }, 800);
     });
 
     function showFallback(){
