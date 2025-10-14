@@ -4,256 +4,199 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <link rel="icon" type="image/x-icon" href="https://hyxjz.blogspot.com/favicon.ico">
-  <title>新加州｜公設回報查詢（GitHub 版）</title>
+  <title>新加州｜住戶公設回報</title>
   <style>
     :root{
-      --base-font: clamp(18px, 2.5vw, 22px);
-      --font-lg: clamp(24px, 3.5vw, 32px);
-      --font-xl: clamp(28px, 4vw, 40px);
-      --ink:#0f172a;--muted:#6b7280;--card:#fff;--bg:#f6f9ff;--chip:#e6eeff;--chip-ink:#1e3a8a;--brand:#3b82f6;
-      --radius: 16px; --pad-sm: clamp(8px, 2vw, 12px); --pad-md: clamp(12px, 2.5vw, 16px); --pad-lg: clamp(16px, 3vw, 24px);
-      --gap-sm: clamp(8px, 2vw, 12px); --gap-md: clamp(12px, 2.5vw, 16px); --gap-lg: clamp(16px, 3vw, 24px);
+      --font-base: clamp(16px, 2.4vw, 20px);
+      --font-lg:   clamp(20px, 3.2vw, 30px);
+      --font-xl:   clamp(24px, 4vw, 36px);
+      --bg:#eef5ff; --card:#ffffff; --ink:#0f172a; --muted:#6b7280;
+      --brand:#3b82f6; --ok:#16a34a; --warn:#d97706; --err:#dc2626;
+      --border:#dbe4ff; --field:#f8fbff;
+      --radius: 16px; --pad: clamp(12px, 2.3vw, 18px); --gap: clamp(10px, 2.2vw, 16px); --section-gap: clamp(16px, 3vw, 24px);
+      --deep-red: #8B0000;
     }
-    html{font-size:var(--base-font)} *{box-sizing:border-box}
-    body{ margin:0; background:linear-gradient(180deg,#eef5ff,#f6f9ff); font-family:"Noto Sans TC",system-ui,-apple-system; line-height:1.7;
-      padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); }
+    html, body { margin:0; font-size:var(--font-base); line-height:1.6; color:var(--ink);
+      font-family:"Noto Sans TC",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; min-height:100vh; }
+    body { background:linear-gradient(180deg,#eef5ff,#eaf2ff); padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); }
 
-    .wrap{ max-width:min(1200px, 100% - clamp(16px, 3vw, 32px)); margin: var(--gap-lg) auto; padding: var(--pad-md); }
+    .wrap{ width:100%; max-width:min(900px, 100% - clamp(16px,3vw,32px)); margin:0 auto; padding: max(env(safe-area-inset-top),12px) 0 clamp(24px,4vw,32px); }
+    .card{ background:var(--card); border-radius: calc(var(--radius) + 2px); box-shadow:0 10px 30px rgba(3,7,18,.1); padding: clamp(16px, 3vw, 24px); margin: 0 auto; position:relative; }
 
-    .header{ display:flex; flex-direction:column; gap:var(--gap-md); margin-bottom:var(--gap-lg); }
-    @media (min-width:768px){ .header{ flex-direction:row; justify-content:space-between; align-items:flex-end; } }
-    h1{ margin:0; font-size:var(--font-xl); color:var(--ink); line-height:1.2; }
+    /* 右上：我要回報（其實是回到這頁），左放空位，右上放到標題上方 */
+    .top-actions{
+      position:sticky; top:0; z-index:5; display:flex; justify-content:flex-end; padding:8px 0 0;
+      background:linear-gradient(180deg, rgba(238,245,255,.95), rgba(238,245,255,0));
+    }
+    .btn{ appearance:none; border:0; border-radius: calc(var(--radius) + 2px);
+      padding: clamp(10px,2.2vw,14px) clamp(14px,3vw,18px); font-weight:800; cursor:pointer;
+      font-size:clamp(0.95rem, 2.6vw, 1.2rem); transition:.2s; text-align:center; display:inline-flex; align-items:center; justify-content:center; gap:10px; text-decoration:none; }
+    .btn.primary{ background:var(--brand); color:#fff; }
+    .btn.link{ background: rgba(139,0,0,.12); color: var(--deep-red); border: 2px solid var(--deep-red); font-weight:900; }
 
-    .main-actions{ display:flex; gap:var(--gap-md); flex-wrap:wrap; }
-    .btn-primary{ background:var(--brand); color:#fff; border:none; border-radius:var(--radius); padding:var(--pad-md) var(--pad-lg);
-      font-size:clamp(1rem,2.5vw,1.3rem); font-weight:800; cursor:pointer; transition:.2s; text-decoration:none; display:inline-flex; align-items:center; justify-content:center; gap:8px; white-space:nowrap; }
-    .btn-primary:hover{ transform:translateY(-2px); box-shadow:0 6px 20px rgba(59,130,246,.3); }
+    /* 置頂按鈕 */
+    .back-top{
+      position:fixed; right:16px; bottom:16px; z-index:10;
+      opacity:0; pointer-events:none; transition:opacity .2s;
+    }
+    .back-top.show{ opacity:1; pointer-events:auto; }
+    .back-top .btn{ border-radius:999px; padding:12px 16px; }
 
-    .controls{ display:grid; grid-template-columns:1fr; gap:var(--gap-md); margin-bottom:var(--gap-lg); background:rgba(255,255,255,.8);
-      padding:var(--pad-lg); border-radius:var(--radius); backdrop-filter: blur(10px); }
-    @media (min-width:640px){ .controls{ grid-template-columns:1fr 1fr; } }
-    @media (min-width:1024px){ .controls{ grid-template-columns:1fr 2fr 1fr 1fr; } }
-    .controls input, .controls select, .controls button{ padding:var(--pad-md); border:2px solid #dce5ff; border-radius:var(--radius); background:#fff; font-size:clamp(1rem,2.2vw,1.2rem); font-weight:600; width:100%; transition:.2s; }
-    .controls input:focus, .controls select:focus{ outline:none; border-color:var(--brand); box-shadow:0 0 0 3px rgba(59,130,246,.1); }
-    .controls button{ background:var(--chip); color:var(--chip-ink); border:2px solid var(--chip); cursor:pointer; font-weight:800; }
-    .controls button:hover{ background:var(--chip-ink); color:#fff; transform:translateY(-1px); }
+    h1{ margin: clamp(6px,1.5vw,12px) 0 clamp(8px,2vw,12px); font-size:var(--font-xl); text-align:center; }
+    p.sub{ margin:0 0 var(--section-gap); color:var(--muted); text-align:center; }
 
-    .grid{display:block}
-    .card{ background:var(--card); border-radius:18px; box-shadow:0 8px 22px rgba(3,7,18,.08); padding:var(--pad-lg); margin-bottom:var(--gap-md); transition:.2s; }
-    .card:hover{ transform:translateY(-2px); box-shadow:0 12px 30px rgba(3,7,18,.12); }
+    .field{ margin: clamp(16px, 3vw, 24px) 0; width:100%; }
+    label{ display:block; margin:0 0 clamp(8px,2vw,12px); font-weight:800; color:#0b1f44; }
+    input, select, textarea{ width:100%; background:var(--field); border:1px solid var(--border); border-radius:var(--radius); padding: clamp(14px,3vw,18px); font-size:1rem; transition:.2s; }
+    input:focus, select:focus, textarea:focus{ outline:none; border-color:var(--brand); box-shadow:0 0 0 3px rgba(59,130,246,.1); }
+    textarea{ min-height: clamp(140px, 35vw, 180px); resize: vertical; }
+    .hint{ font-size:.95rem; color:var(--muted); margin-top:6px; }
 
-    .badge{ display:inline-block; background:#eef2ff; border:2px solid #dbe4ff; color:#1e3a8a; font-weight:800; font-size:clamp(.9rem,2vw,1.1rem); padding:var(--pad-sm) var(--pad-md); border-radius:14px; margin-bottom:var(--gap-sm); }
+    .grid{ display:block; width:100%; }
+    input[type="file"]{ padding: clamp(12px,2.5vw,16px); background:#fff; border:2px dashed var(--border); }
 
-    .row{ display:flex; flex-direction:column; gap:var(--pad-sm); margin:var(--gap-sm) 0; }
-    @media (min-width:480px){ .row{ flex-direction:row; align-items:flex-start; } }
-    .label{ min-width:6em; color:var(--muted); font-weight:800; letter-spacing:.02em; font-size:clamp(.9rem,2vw,1.1rem); flex-shrink:0; }
-    .value{ color:#111827; font-size:clamp(1.1rem,2.5vw,1.4rem); font-weight:800; flex:1; }
-    .value-id{ font-size:clamp(1.3rem,3vw,1.6rem); color:var(--brand); }
-
-    .chips{ display:flex; gap:var(--gap-sm); flex-wrap:wrap; }
-    .chip{ background:var(--chip); color:var(--chip-ink); padding:var(--pad-sm) var(--pad-md); border-radius:999px; font-weight:800; font-size:clamp(.9rem,2vw,1.1rem); }
-
-    .desc{ font-size:clamp(1.1rem,2.5vw,1.3rem); color:#111827; line-height:1.6; }
-
-    .thumbs{ display:flex; gap:var(--gap-sm); flex-wrap:wrap; margin-top:var(--gap-md); }
-    .thumbs img{ width:clamp(100px,20vw,140px); height:clamp(100px,20vw,140px); object-fit:cover; border-radius:12px; border:2px solid #e5edff; cursor:pointer; transition:.2s; }
-    .thumbs img:hover{ transform:scale(1.05); border-color:var(--brand); }
-
-    .empty{ padding:var(--pad-lg); color:#64748b; text-align:center; font-size:clamp(1.1rem,2.5vw,1.3rem); }
-    .footer{ margin-top:var(--gap-lg); color:#94a3b8; font-size:clamp(.9rem,2vw,1rem); text-align:center; padding:var(--pad-md); }
-
-    .pager{ display:flex; gap:var(--gap-sm); flex-wrap:wrap; align-items:center; justify-content:center; margin:var(--gap-lg) 0; }
-    .pager button{ padding:var(--pad-md); border:2px solid #dbe4ff; border-radius:14px; background:#fff; min-width:clamp(44px,8vw,56px); font-weight:800; font-size:clamp(.9rem,2vw,1.1rem); cursor:pointer; transition:.2s; }
-    .pager button:hover:not([disabled]){ background:var(--chip); border-color:var(--brand); }
-    .pager button[disabled]{ opacity:.45; cursor:not-allowed; }
-    .pager .now{ background:#e6eeff; border-color:#cfe0ff; color:var(--chip-ink); }
-
-    .loading{ display:inline-block; width:20px; height:20px; border:3px solid #f3f3f3; border-top:3px solid var(--brand); border-radius:50%; animation:spin 1s linear infinite; }
-    @keyframes spin{ 0%{ transform:rotate(0deg) } 100%{ transform:rotate(360deg) } }
+    .actions{ display:flex; gap:var(--gap); flex-wrap:wrap; margin-top: clamp(24px,5vw,36px); justify-content:center; }
+    .status{ margin-top: clamp(16px,3vw,24px); font-size:1rem; padding: clamp(12px,2.5vw,16px); border-radius:var(--radius); text-align:center; }
+    .ok{ color:var(--ok); background: rgba(22,163,74,.1); } .warn{ color:var(--warn); background: rgba(217,119,6,.1); } .err{ color:var(--err); background: rgba(220,38,38,.1); }
   </style>
 </head>
 <body>
+
   <div class="wrap">
-    <div class="header">
-      <div><h1>新加州｜公設回報查詢</h1></div>
-      <div class="main-actions">
-        <a class="btn-primary" id="btnBack" href="#" target="_blank" rel="noopener">📝 我要回報</a>
+    <div class="card">
+      <div class="top-actions">
+        <!-- 右上角：公開查詢（GitHub 版），新分頁打開 -->
+        <a class="btn link" href="https://hyxjz2024-source.github.io/pr/index.html" target="_blank" rel="noopener">查看已回報（避免重複）</a>
       </div>
+
+      <h1>新加州｜住戶公設回報</h1>
+      <p class="sub">請提供清楚描述與照片，一同協助管委會提交給驗收廠商，同步整理於驗收報告，作為建商改善依據。</p>
+
+      <form id="reportForm" novalidate>
+        <div class="grid">
+          <div class="field">
+            <label>回報人（必填）</label>
+            <input name="reporter" required />
+          </div>
+          <div class="field">
+            <label>聯絡方式（必填）</label>
+            <input name="contact" required placeholder="市內電話或手機" />
+          </div>
+
+          <div class="field">
+            <label>住戶別</label>
+            <input name="unit" placeholder="例如：B6-6F…" />
+            <div class="hint">方便管委會比對；相同住戶重複案件可彙整。</div>
+          </div>
+          <div class="field">
+            <label>地點</label>
+            <select name="location" id="location" required>
+              <option value="">— 請選擇 —</option>
+              <option>A棟</option><option>B棟</option><option>C棟</option><option>D棟</option><option>E棟</option>
+              <option>大廳</option><option>停車場B1</option><option>停車場B2 (ABC棟B1)</option><option>停車場B3 (ABC棟B2)</option>
+              <option>其他</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field" id="locNoteCol" style="display:none">
+          <label>地點說明（選「其他」才需填）</label>
+          <input name="location_note" placeholder="請補充具體位置，如：地下室 垃圾間旁" />
+        </div>
+
+        <div class="field">
+          <label>問題說明（最多 500 字）</label>
+          <textarea name="description" id="description" required placeholder="請描述問題具體情況、是否影響安全、持續時間…"></textarea>
+          <div class="hint"><span id="descCount">0</span>/500</div>
+        </div>
+
+        <div class="field">
+          <label>上傳照片（最多 5 張，單檔 ≤ 10MB）</label>
+          <input type="file" id="photos" accept="image/*" multiple />
+          <div class="hint">清晰、光線充足的照片有助於辨識。</div>
+        </div>
+
+        <div class="actions">
+          <button type="reset" class="btn">清除</button>
+          <button type="submit" class="btn primary">送出回報</button>
+        </div>
+        <div id="status" class="status"></div>
+      </form>
     </div>
+  </div>
 
-    <div class="controls">
-      <select id="locFilter" aria-label="地點篩選"><option value="">全部地點</option></select>
-      <input id="q" placeholder="搜尋：編號、地點、問題關鍵字" aria-label="搜尋" />
-      <select id="pageSize" aria-label="每頁筆數">
-        <option value="10" selected>每頁 10 筆</option>
-        <option value="20">每頁 20 筆</option>
-        <option value="50">每頁 50 筆</option>
-      </select>
-      <button id="btnReload">🔄 重新載入</button>
-    </div>
-
-    <div id="list" class="grid"></div>
-    <div id="empty" class="empty" style="display:none">目前沒有資料，或關鍵字／篩選條件過於嚴格。</div>
-    <div id="pager" class="pager" aria-label="分頁"></div>
-
-    <div class="footer">為保護隱私，本頁不顯示回報人、聯絡方式與住戶別。</div>
+  <!-- 回到頂層 -->
+  <div class="back-top" id="backTop">
+    <a href="#" class="btn primary" aria-label="回到頂層">▲ 回到頂層</a>
   </div>
 
   <script>
-    // ======= 這兩個請換成你這次部署的 /exec =======
-    const API_URL  = "https://script.google.com/macros/s/AKfycbzYWtP_YiZQwnO7ls0YycIlYPHq7AB21crgbk4Z4L3mkoTINB8rR4mQwrGgW7tahmM/exec";
-    const FORM_URL = "https://script.google.com/macros/s/AKfycbzYWtP_YiZQwnO7ls0YycIlYPHq7AB21crgbk4Z4L3mkoTINB8rR4mQwrGgW7tahmM/exec";
-    // ===============================================
+    // ★ 換成你這次部署的 GAS /exec
+    const API_URL = "https://script.google.com/macros/s/AKfycbyEuG_5s5RhDD5fHPafkkneTb4lEkgah7xTS1Y_A3HBK468aAM89GxfDxZPWQn310Lq/exec";
 
-    document.getElementById('btnBack').href = FORM_URL;
+    // 地點＝其他 → 顯示補充欄位
+    const sel = document.getElementById('location');
+    const locNoteCol = document.getElementById('locNoteCol');
+    sel.addEventListener('change', ()=>{ locNoteCol.style.display = (sel.value==='其他') ? 'block' : 'none'; });
 
-    const elList   = document.getElementById('list');
-    const elEmpty  = document.getElementById('empty');
-    const elLoc    = document.getElementById('locFilter');
-    const elQ      = document.getElementById('q');
-    const elReload = document.getElementById('btnReload');
-    const elPageSz = document.getElementById('pageSize');
-    const elPager  = document.getElementById('pager');
+    // 文字計數
+    const desc = document.getElementById('description');
+    const cnt = document.getElementById('descCount');
+    desc.addEventListener('input', ()=>{ cnt.textContent = Math.min(500, desc.value.length); if(desc.value.length>500){ desc.value = desc.value.slice(0,500); } });
 
-    let ALL = [];
-    let FILTERED = [];
-    let page = 1;
+    // 回到頂層按鈕顯示/隱藏
+    const backTop = document.getElementById('backTop');
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 240) backTop.classList.add('show');
+      else backTop.classList.remove('show');
+    });
 
-    function escapeHtml(s){
-      return String(s||'')
-        .replace(/&/g,'&amp;').replace(/</g,'&lt;')
-        .replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
-    }
+    // 表單送出：用 FormData 直接 POST 到 GAS
+    const form = document.getElementById('reportForm');
+    const statusEl = document.getElementById('status');
 
-    function renderPage(items, pageSize){
-      elList.innerHTML = '';
-      if (!items.length) { elEmpty.style.display='block'; elPager.innerHTML=''; return; }
-      elEmpty.style.display='none';
+    form.addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      statusEl.textContent = '上傳中…';
+      statusEl.className = 'status';
 
-      const total = items.length;
-      const pages = Math.max(1, Math.ceil(total / pageSize));
-      page = Math.max(1, Math.min(page, pages));
+      try{
+        if(!form.reporter.value.trim() || !form.contact.value.trim()){
+          statusEl.textContent = '請填寫「回報人」與「聯絡方式」。';
+          statusEl.className = 'status warn';
+          return;
+        }
 
-      const start = (page - 1) * pageSize;
-      const end   = Math.min(start + pageSize, total);
-      const slice = items.slice(start, end);
+        // 組 FormData（這會是 multipart/form-data，GAS 的 doPost 可從 e.parameter / e.files 取）
+        const fd = new FormData(form);
 
-      slice.forEach((it, idx) => {
-        const rowNo = start + idx + 1;
-        const card = document.createElement('div');
-        card.className = 'card';
+        // 檔案限制與加入
+        const files = Array.from(document.getElementById('photos').files || []);
+        if (files.length > 5) throw new Error('最多 5 張照片');
+        for (const f of files) {
+          if (f.size/1024/1024 > 10) throw new Error(`單檔不可超過 10MB：${f.name}`);
+        }
+        // 關鍵：用同一鍵名 'photos' 重複 append，GAS 端 e.files['photos'] 會是陣列
+        for (const f of files) fd.append('photos', f, f.name);
 
-        const chips = `
-          ${it.location ? `<span class="chip">${escapeHtml(it.location)}</span>` : ''}
-          ${it.location_note ? `<span class="chip">${escapeHtml(it.location_note)}</span>` : ''}
-        `;
+        // 送出：不加自訂 headers，避免 CORS 預檢
+        const resp = await fetch(API_URL, { method:'POST', body: fd, redirect:'follow' });
+        // 有些情況 Apps Script 會 302，到最後仍是 JSON；用 resp.json() 嘗試即可
+        let data = null;
+        try { data = await resp.json(); } catch(_) { /* 不是 JSON 就丟錯 */ }
 
-        const thumbs = (it.images||[]).map(img => `
-          <a href="${img.viewUrl}" target="_blank" rel="noopener">
-            <img src="${img.thumbUrl}" alt="案件照片" loading="lazy">
-          </a>
-        `).join('');
+        // 同時相容 {success:true} 或 {ok:true}
+        const ok = data && (data.success === true || data.ok === true);
+        if (!ok) throw new Error((data && (data.message || data.error)) || ('HTTP ' + resp.status));
 
-        card.innerHTML = `
-          <div class="badge">案件${rowNo}</div>
-          <div class="row"><div class="label">案件編號：</div><div class="value value-id"># ${escapeHtml(it.caseId)}</div></div>
-          <div class="row"><div class="label">回報時間：</div><div class="value" style="font-weight:700">${escapeHtml(it.time)}</div></div>
-          <div class="row"><div class="label">回報地點：</div><div class="value"><div class="chips">${chips}</div></div></div>
-          <div class="row"><div class="label">問題說明：</div><div class="value desc">${escapeHtml(it.description)}</div></div>
-          ${thumbs ? `<div class="thumbs" aria-label="相關照片">${thumbs}</div>` : ''}
-        `;
-        elList.appendChild(card);
-      });
-
-      // 分頁列
-      elPager.innerHTML = '';
-      const mk = (txt, disabled, fn, cls='')=>{
-        const b=document.createElement('button'); 
-        b.textContent=txt; 
-        if(disabled) b.disabled=true; 
-        b.className=cls; 
-        b.onclick=fn; 
-        return b;
-      };
-      elPager.appendChild(mk('« 最前', page===1, ()=>{page=1; renderPage(FILTERED,pageSize)}));
-      elPager.appendChild(mk('‹ 上一頁', page===1, ()=>{page--; renderPage(FILTERED,pageSize)}));
-      const pagesTotal = Math.max(1, Math.ceil(FILTERED.length / pageSize));
-      const show=5, startP=Math.max(1,page-Math.floor(show/2)), endP=Math.min(pagesTotal, startP+show-1);
-      for(let p=startP;p<=endP;p++) elPager.appendChild(mk(String(p), false, ()=>{page=p; renderPage(FILTERED,pageSize)}, p===page?'now':''));
-      elPager.appendChild(mk('下一頁 ›', page>=pagesTotal, ()=>{page++; renderPage(FILTERED,pageSize)}));
-      elPager.appendChild(mk('最後 »', page>=pagesTotal, ()=>{page=pagesTotal; renderPage(FILTERED,pageSize)}));
-    }
-
-    function filter(){
-      const q = (elQ.value || '').trim().toLowerCase();
-      const loc = elLoc.value;
-      FILTERED = ALL.filter(it => {
-        const locOk = !loc || String(it.location||'') === loc;
-        if (!locOk) return false;
-        if (!q) return true;
-        const hay = [(it.caseId||''),(it.location||''),(it.location_note||''),(it.description||'')].join('\n').toLowerCase();
-        return hay.includes(q);
-      });
-      page = 1;
-      renderPage(FILTERED, Number(elPageSz.value||10));
-    }
-
-    function buildLocationOptions(){
-      const set = new Set();
-      ALL.forEach(it => { if (it.location) set.add(String(it.location)); });
-      const list = Array.from(set).sort((a,b)=>a.localeCompare(b,'zh-Hant'));
-      elLoc.innerHTML = `<option value="">全部地點</option>` + list.map(v=>`<option value="${escapeHtml(v)}">${escapeHtml(v)}</option>`).join('');
-    }
-
-    // 先嘗試 CORS fetch；若失敗，fallback JSONP
-    function loadViaFetch(){
-      const url = `${API_URL}?api=public&limit=500&_=${Date.now()}`;
-      return fetch(url)
-        .then(r => {
-          if (!r.ok) throw new Error('HTTP ' + r.status);
-          return r.json();
-        })
-        .then(data => { ALL = data || []; buildLocationOptions(); filter(); });
-    }
-
-    function loadViaJSONP(){
-      return new Promise((resolve, reject) => {
-        const cb = 'cb_' + Math.random().toString(36).slice(2);
-        window[cb] = (data) => {
-          try {
-            ALL = data || [];
-            buildLocationOptions(); filter();
-            resolve();
-          } finally {
-            delete window[cb];
-            s.remove();
-          }
-        };
-        const s = document.createElement('script');
-        s.src = `${API_URL}?api=public&limit=500&callback=${cb}&_=${Date.now()}`;
-        s.onerror = () => { delete window[cb]; s.remove(); reject(new Error('JSONP 載入失敗')); };
-        document.head.appendChild(s);
-      });
-    }
-
-    function load(){
-      elList.innerHTML = '<div class="empty"><div class="loading"></div> 載入中…</div>';
-      elReload.disabled = true; elReload.textContent = '載入中…';
-      loadViaFetch()
-        .catch(() => loadViaJSONP())
-        .catch(err => {
-          console.error(err);
-          elList.innerHTML = '<div class="empty">載入失敗，請稍後再試。</div>';
-        })
-        .finally(() => { elReload.disabled = false; elReload.textContent = '🔄 重新載入'; });
-    }
-
-    elQ.addEventListener('input', filter);
-    elLoc.addEventListener('change', filter);
-    elReload.addEventListener('click', load);
-    elPageSz.addEventListener('change', ()=>{ page=1; renderPage(FILTERED, Number(elPageSz.value||10)); });
-
-    load(); // 初始載入
+        statusEl.innerHTML = `✅ ${data.message || '感謝您的回饋，我們已經收到！'}<br>案件編號：<b>${data.caseId || '(未回傳編號)'}</b>`;
+        statusEl.className = 'status ok';
+        form.reset(); cnt.textContent = 0; sel.dispatchEvent(new Event('change'));
+      }catch(err){
+        statusEl.textContent = '上傳失敗：' + (err && err.message || err || '未知錯誤');
+        statusEl.className = 'status err';
+      }
+    });
   </script>
 </body>
 </html>
