@@ -4,143 +4,305 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <link rel="icon" type="image/x-icon" href="https://hyxjz.blogspot.com/favicon.ico">
-  <title>新加州｜公設回報查詢</title>
+  <title>新加州｜公設回報查詢（GitHub 版）</title>
   <style>
     :root{
       --base-font: clamp(18px, 2.5vw, 22px);
+      --font-lg: clamp(24px, 3.5vw, 32px);
       --font-xl: clamp(28px, 4vw, 40px);
-      --ink:#0f172a; --muted:#6b7280;
-      --card:#fff; --bg:#f6f9ff;
-      --brand:#3b82f6;
-      --chip:#e6eeff; --chip-ink:#1e3a8a;
+      --ink:#0f172a;--muted:#6b7280;--card:#fff;--bg:#f6f9ff;
+      --chip:#e6eeff;--chip-ink:#1e3a8a;--brand:#3b82f6;
       --radius: 16px;
+      --pad-sm: clamp(8px, 2vw, 12px);
+      --pad-md: clamp(12px, 2.5vw, 16px);
+      --pad-lg: clamp(16px, 3vw, 24px);
+      --gap-sm: clamp(8px, 2vw, 12px);
+      --gap-md: clamp(12px, 2.5vw, 16px);
+      --gap-lg: clamp(16px, 3vw, 24px);
     }
-    *{box-sizing:border-box}
-    html{font-size:var(--base-font)}
+    html{font-size:var(--base-font)} *{box-sizing:border-box}
     body{
       margin:0;
       background:linear-gradient(180deg,#eef5ff,#f6f9ff);
       font-family:"Noto Sans TC",system-ui,-apple-system;
       line-height:1.7;
+      padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
     }
+
     .wrap{
       max-width:min(1200px, 100% - clamp(16px, 3vw, 32px));
-      margin: clamp(20px, 4vw, 32px) auto;
-      padding: clamp(12px, 2.5vw, 16px);
-    }
-    h1{
-      margin:0;
-      font-size:var(--font-xl);
-      color:var(--ink);
-      text-align: left;
-      line-height:1.2;
+      margin: var(--gap-lg) auto;
+      padding: var(--pad-md);
     }
 
-    /* 右上角「我要回報」 */
-    .header-bar {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      margin-bottom: clamp(16px, 3vw, 24px);
+    .header{ display:flex; flex-direction:column; gap:var(--gap-md); margin-bottom:var(--gap-lg); }
+    @media (min-width:768px){
+      .header{ flex-direction:row; justify-content:space-between; align-items:flex-end; }
     }
-    .btn-report {
-      background: var(--brand);
-      color: white;
-      font-weight: 800;
-      font-size: clamp(0.9rem, 2.5vw, 1.1rem);
-      padding: 10px 16px;
-      border: none;
-      border-radius: 999px;
-      cursor: pointer;
-      text-decoration: none;
-      transition: all 0.2s ease;
+    h1{ margin:0; font-size:var(--font-xl); color:var(--ink); line-height:1.2; }
+
+    .main-actions{ display:flex; gap:var(--gap-md); flex-wrap:wrap; }
+    .btn-primary{
+      background:var(--brand); color:#fff; border:none; border-radius:var(--radius);
+      padding:var(--pad-md) var(--pad-lg);
+      font-size:clamp(1rem,2.5vw,1.3rem);
+      font-weight:800; cursor:pointer; transition:.2s;
+      text-decoration:none; display:inline-flex; align-items:center; justify-content:center; gap:8px;
+      white-space:nowrap;
     }
-    .btn-report:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(59, 130, 246, 0.3);
+    .btn-primary:hover{
+      transform:translateY(-2px);
+      box-shadow:0 6px 20px rgba(59,130,246,.3);
     }
 
-    /* 回頂端按鈕 */
-    #backToTop {
-      position: fixed;
-      bottom: 24px;
-      right: 24px;
-      background: var(--brand);
-      color: white;
-      font-size: 20px;
-      padding: 12px 14px;
-      border: none;
-      border-radius: 50%;
-      cursor: pointer;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.3s ease;
-      z-index: 999;
+    .controls{
+      display:grid;
+      grid-template-columns:1fr;
+      gap:var(--gap-md);
+      margin-bottom:var(--gap-lg);
+      background:rgba(255,255,255,.8);
+      padding:var(--pad-lg);
+      border-radius:var(--radius);
+      backdrop-filter: blur(10px);
     }
-    #backToTop.show {
-      opacity: 1;
-      pointer-events: auto;
+    @media (min-width:640px){ .controls{ grid-template-columns:1fr 1fr; } }
+    @media (min-width:1024px){ .controls{ grid-template-columns:1fr 2fr 1fr 1fr; } }
+    .controls input, .controls select, .controls button{
+      padding:var(--pad-md);
+      border:2px solid #dce5ff;
+      border-radius:var(--radius);
+      background:#fff;
+      font-size:clamp(1rem,2.2vw,1.2rem);
+      font-weight:600;
+      width:100%;
+      transition:.2s;
     }
+    .controls input:focus, .controls select:focus{
+      outline:none; border-color:var(--brand);
+      box-shadow:0 0 0 3px rgba(59,130,246,.1);
+    }
+    .controls button{
+      background:var(--chip); color:var(--chip-ink);
+      border:2px solid var(--chip); cursor:pointer; font-weight:800;
+    }
+    .controls button:hover{ background:var(--chip-ink); color:#fff; transform:translateY(-1px); }
 
-    /* 下面維持你原本的列表樣式 */
+    .grid{display:block}
     .card{
       background:var(--card);
       border-radius:18px;
       box-shadow:0 8px 22px rgba(3,7,18,.08);
-      padding: clamp(16px, 3vw, 24px);
-      margin-bottom: clamp(16px, 3vw, 24px);
+      padding:var(--pad-lg);
+      margin-bottom:var(--gap-md);
+      transition:.2s;
     }
+    .card:hover{ transform:translateY(-2px); box-shadow:0 12px 30px rgba(3,7,18,.12); }
+
     .badge{
       display:inline-block;
       background:#eef2ff;
       border:2px solid #dbe4ff;
       color:#1e3a8a;
       font-weight:800;
-      padding:4px 10px;
+      font-size:clamp(.9rem,2vw,1.1rem);
+      padding:var(--pad-sm) var(--pad-md);
       border-radius:14px;
-      margin-bottom:8px;
+      margin-bottom:var(--gap-sm);
     }
-    .row{margin:6px 0; display:flex; flex-wrap:wrap;}
-    .label{min-width:6em;color:var(--muted);font-weight:800}
-    .value{flex:1;color:#111827;font-weight:700}
-    .chips{display:flex;gap:6px;flex-wrap:wrap}
-    .chip{background:var(--chip);color:var(--chip-ink);padding:4px 10px;border-radius:999px;font-weight:800}
-    .thumbs{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
-    .thumbs img{width:120px;height:120px;object-fit:cover;border-radius:10px;border:2px solid #e5edff;cursor:pointer}
 
+    .row{ display:flex; flex-direction:column; gap:var(--pad-sm); margin:var(--gap-sm) 0; }
+    @media (min-width:480px){ .row{ flex-direction:row; align-items:flex-start; } }
+    .label{ min-width:6em; color:var(--muted); font-weight:800; letter-spacing:.02em; font-size:clamp(.9rem,2vw,1.1rem); flex-shrink:0; }
+    .value{ color:#111827; font-size:clamp(1.1rem,2.5vw,1.4rem); font-weight:800; flex:1; }
+    .value-id{ font-size:clamp(1.3rem,3vw,1.6rem); color:var(--brand); }
+
+    .chips{ display:flex; gap:var(--gap-sm); flex-wrap:wrap; }
+    .chip{ background:var(--chip); color:var(--chip-ink); padding:var(--pad-sm) var(--pad-md); border-radius:999px; font-weight:800; font-size:clamp(.9rem,2vw,1.1rem); }
+
+    .desc{ font-size:clamp(1.1rem,2.5vw,1.3rem); color:#111827; line-height:1.6; }
+
+    .thumbs{ display:flex; gap:var(--gap-sm); flex-wrap:wrap; margin-top:var(--gap-md); }
+    .thumbs img{ width:clamp(100px,20vw,140px); height:clamp(100px,20vw,140px); object-fit:cover; border-radius:12px; border:2px solid #e5edff; cursor:pointer; transition:.2s; }
+    .thumbs img:hover{ transform:scale(1.05); border-color:var(--brand); }
+
+    .empty{ padding:var(--pad-lg); color:#64748b; text-align:center; font-size:clamp(1.1rem,2.5vw,1.3rem); }
+    .footer{ margin-top:var(--gap-lg); color:#94a3b8; font-size:clamp(.9rem,2vw,1rem); text-align:center; padding:var(--pad-md); }
+
+    .pager{ display:flex; gap:var(--gap-sm); flex-wrap:wrap; align-items:center; justify-content:center; margin:var(--gap-lg) 0; }
+    .pager button{ padding:var(--pad-md); border:2px solid #dbe4ff; border-radius:14px; background:#fff; min-width:clamp(44px,8vw,56px); font-weight:800; font-size:clamp(.9rem,2vw,1.1rem); cursor:pointer; transition:.2s; }
+    .pager button:hover:not([disabled]){ background:var(--chip); border-color:var(--brand); }
+    .pager button[disabled]{ opacity:.45; cursor:not-allowed; }
+    .pager .now{ background:#e6eeff; border-color:#cfe0ff; color:var(--chip-ink); }
+
+    .loading{ display:inline-block; width:20px; height:20px; border:3px solid #f3f3f3; border-top:3px solid var(--brand); border-radius:50%; animation:spin 1s linear infinite; }
+    @keyframes spin{ 0%{ transform:rotate(0deg) } 100%{ transform:rotate(360deg) } }
   </style>
 </head>
 <body>
   <div class="wrap">
-    <!-- 🔹 頁首 + 我要回報 -->
-    <div class="header-bar">
-      <h1>新加州｜公設回報查詢</h1>
-      <a href="https://script.google.com/macros/s/【你的exec網址】/exec" target="_blank" class="btn-report">📝 我要回報</a>
+    <div class="header">
+      <div><h1>新加州｜公設回報查詢</h1></div>
+      <div class="main-actions">
+        <a class="btn-primary" id="btnBack" href="#" target="_blank" rel="noopener">📝 我要回報</a>
+      </div>
     </div>
 
-    <!-- 篩選與列表（這裡可放你原本的控制條＋案件列表） -->
-    <div id="list"></div>
-    <div class="footer" style="text-align:center;color:#94a3b8;margin-top:30px;font-size:14px">
-      為保護隱私，本頁不顯示回報人、聯絡方式與住戶別。
+    <div class="controls">
+      <select id="locFilter" aria-label="地點篩選"><option value="">全部地點</option></select>
+      <input id="q" placeholder="搜尋：編號、地點、問題關鍵字" aria-label="搜尋" />
+      <select id="pageSize" aria-label="每頁筆數">
+        <option value="10" selected>每頁 10 筆</option>
+        <option value="20">每頁 20 筆</option>
+        <option value="50">每頁 50 筆</option>
+      </select>
+      <button id="btnReload">🔄 重新載入</button>
     </div>
+
+    <div id="list" class="grid"></div>
+    <div id="empty" class="empty" style="display:none">目前沒有資料，或關鍵字／篩選條件過於嚴格。</div>
+    <div id="pager" class="pager" aria-label="分頁"></div>
+
+    <div class="footer">為保護隱私，本頁不顯示回報人、聯絡方式與住戶別。</div>
   </div>
 
-  <!-- 🔸 回頂端按鈕 -->
-  <button id="backToTop" title="回到頂端">⬆</button>
-
   <script>
-    const backToTop = document.getElementById('backToTop');
-    window.addEventListener('scroll', () => {
-      if (window.scrollY > 300) {
-        backToTop.classList.add('show');
-      } else {
-        backToTop.classList.remove('show');
-      }
-    });
-    backToTop.addEventListener('click', () => {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    });
-  </script>
-</body>
-</html>
+    // ======= 這兩個請換成你這次部署的 /exec =======
+    const API_URL  = "https://script.google.com/macros/s/AKfycbzYWtP_YiZQwnO7ls0YycIlYPHq7AB21crgbk4Z4L3mkoTINB8rR4mQwrGgW7tahmM/exec";
+    const FORM_URL = "https://script.google.com/macros/s/AKfycbzYWtP_YiZQwnO7ls0YycIlYPHq7AB21crgbk4Z4L3mkoTINB8rR4mQwrGgW7tahmM/exec";
+    // ===============================================
+
+    document.getElementById('btnBack').href = FORM_URL;
+
+    const elList   = document.getElementById('list');
+    const elEmpty  = document.getElementById('empty');
+    const elLoc    = document.getElementById('locFilter');
+    const elQ      = document.getElementById('q');
+    const elReload = document.getElementById('btnReload');
+    const elPageSz = document.getElementById('pageSize');
+    const elPager  = document.getElementById('pager');
+
+    let ALL = [];
+    let FILTERED = [];
+    let page = 1;
+
+    function escapeHtml(s){
+      return String(s||'')
+        .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+        .replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+    }
+
+    function renderPage(items, pageSize){
+      elList.innerHTML = '';
+      if (!items.length) { elEmpty.style.display='block'; elPager.innerHTML=''; return; }
+      elEmpty.style.display='none';
+
+      const total = items.length;
+      const pages = Math.max(1, Math.ceil(total / pageSize));
+      page = Math.max(1, Math.min(page, pages));
+
+      const start = (page - 1) * pageSize;
+      const end   = Math.min(start + pageSize, total);
+      const slice = items.slice(start, end);
+
+      slice.forEach((it, idx) => {
+        const rowNo = start + idx + 1;
+        const card = document.createElement('div');
+        card.className = 'card';
+
+        const chips = `
+          ${it.location ? `<span class="chip">${escapeHtml(it.location)}</span>` : ''}
+          ${it.location_note ? `<span class="chip">${escapeHtml(it.location_note)}</span>` : ''}
+        `;
+
+        const thumbs = (it.images||[]).map(img => `
+          <a href="${img.viewUrl}" target="_blank" rel="noopener">
+            <img src="${img.thumbUrl}" alt="案件照片" loading="lazy">
+          </a>
+        `).join('');
+
+        card.innerHTML = `
+          <div class="badge">案件${rowNo}</div>
+          <div class="row"><div class="label">案件編號：</div><div class="value value-id"># ${escapeHtml(it.caseId)}</div></div>
+          <div class="row"><div class="label">回報時間：</div><div class="value">${escapeHtml(it.time)}</div></div>
+          <div class="row"><div class="label">回報地點：</div><div class="value"><div class="chips">${chips}</div></div></div>
+          <div class="row"><div class="label">問題說明：</div><div class="value desc">${escapeHtml(it.description)}</div></div>
+          ${thumbs ? `<div class="thumbs" aria-label="相關照片">${thumbs}</div>` : ''}
+        `;
+        elList.appendChild(card);
+      });
+
+      // 分頁
+      elPager.innerHTML = '';
+      const mk = (txt, disabled, fn, cls='')=>{
+        const b=document.createElement('button'); 
+        b.textContent=txt; 
+        if(disabled) b.disabled=true; 
+        b.className=cls; 
+        b.onclick=fn; 
+        return b;
+      };
+      elPager.appendChild(mk('« 最前', page===1, ()=>{page=1; renderPage(FILTERED,pageSize)}));
+      elPager.appendChild(mk('‹ 上一頁', page===1, ()=>{page--; renderPage(FILTERED,pageSize)}));
+      const pagesTotal = Math.max(1, Math.ceil(FILTERED.length / pageSize));
+      const show=5, startP=Math.max(1,page-Math.floor(show/2)), endP=Math.min(pagesTotal, startP+show-1);
+      for(let p=startP;p<=endP;p++) elPager.appendChild(mk(String(p), false, ()=>{page=p; renderPage(FILTERED,pageSize)}, p===page?'now':''));
+      elPager.appendChild(mk('下一頁 ›', page>=pagesTotal, ()=>{page++; renderPage(FILTERED,pageSize)}));
+      elPager.appendChild(mk('最後 »', page>=pagesTotal, ()=>{page=pagesTotal; renderPage(FILTERED,pageSize)}));
+    }
+
+    function filter(){
+      const q = (elQ.value || '').trim().toLowerCase();
+      const loc = elLoc.value;
+      FILTERED = ALL.filter(it => {
+        const locOk = !loc || String(it.location||'') === loc;
+        if (!locOk) return false;
+        if (!q) return true;
+        const hay = [(it.caseId||''),(it.location||''),(it.location_note||''),(it.description||'')].join('\n').toLowerCase();
+        return hay.includes(q);
+      });
+      page = 1;
+      renderPage(FILTERED, Number(elPageSz.value||10));
+    }
+
+    function buildLocationOptions(){
+      const set = new Set();
+      ALL.forEach(it => { if (it.location) set.add(String(it.location)); });
+      const list = Array.from(set).sort((a,b)=>a.localeCompare(b,'zh-Hant'));
+      elLoc.innerHTML = `<option value="">全部地點</option>` + list.map(v=>`<option value="${escapeHtml(v)}">${escapeHtml(v)}</option>`).join('');
+    }
+
+    // CORS fetch + JSONP fallback
+    function loadViaFetch(){
+      const url = `${API_URL}?api=public&limit=500&_=${Date.now()}`;
+      return fetch(url)
+        .then(r => {
+          if (!r.ok) throw new Error('HTTP ' + r.status);
+          return r.json();
+        })
+        .then(data => { ALL = data || []; buildLocationOptions(); filter(); });
+    }
+
+    function loadViaJSONP(){
+      return new Promise((resolve, reject) => {
+        const cb = 'cb_' + Math.random().toString(36).slice(2);
+        window[cb] = (data) => {
+          try {
+            ALL = data || [];
+            buildLocationOptions(); filter();
+            resolve();
+          } finally {
+            delete window[cb]; s.remove();
+          }
+        };
+        const s = document.createElement('script');
+        s.src = `${API_URL}?api=public&limit=500&callback=${cb}&_=${Date.now()}`;
+        s.onerror = () => { delete window[cb]; s.remove(); reject(new Error('JSONP 載入失敗')); };
+        document.head.appendChild(s);
+      });
+    }
+
+    function load(){
+      elList.innerHTML = '<div class="empty"><div class="loading"></div> 載入中…</div>';
+      elReload.disabled = true; elReload.textContent = '載入中…';
+      loadViaFetch()
+        .catch(() =>
