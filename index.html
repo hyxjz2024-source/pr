@@ -35,21 +35,19 @@
       padding: var(--pad-md);
     }
 
+    /* 修改頂部標題區域 */
     .header{ 
-      display:flex; 
-      flex-direction:column; 
-      gap:var(--gap-md); 
-      margin-bottom:var(--gap-lg);
-      text-align: center;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: var(--gap-lg);
+      position: relative;
     }
-    @media (min-width:768px){
-      .header{ 
-        flex-direction:row; 
-        justify-content:space-between; 
-        align-items:center;
-        text-align: left;
-      }
+
+    .title-section {
+      flex: 1;
     }
+
     h1{ 
       margin:0; 
       font-size:var(--font-xl); 
@@ -58,18 +56,34 @@
       font-weight: 800;
     }
 
-    .main-actions{ display:flex; gap:var(--gap-md); flex-wrap:wrap; justify-content: center; }
-    @media (min-width:768px){
-      .main-actions{ justify-content: flex-end; }
+    /* 修改按鈕位置到右上角 */
+    .main-actions{ 
+      position: absolute;
+      top: 0;
+      right: 0;
     }
+
+    @media (max-width: 767px) {
+      .header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--gap-md);
+      }
+      .main-actions {
+        position: static;
+        align-self: flex-end;
+        margin-top: -50px; /* 讓按鈕上移靠近標題 */
+      }
+    }
+
     .btn-primary{
       background:var(--brand); 
       color:#fff; 
       border:none; 
       border-radius:var(--radius);
-      padding:var(--pad-md) var(--pad-lg);
-      font-size:clamp(1rem,2.2vw,1.1rem);
-      font-weight:700; 
+      padding: var(--pad-sm) var(--pad-md);
+      font-size:clamp(0.9rem, 2vw, 1rem);
+      font-weight:600; 
       cursor:pointer; 
       transition:.2s;
       text-decoration:none; 
@@ -78,10 +92,11 @@
       justify-content:center; 
       gap:6px;
       white-space:nowrap;
+      box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
     }
     .btn-primary:hover{
       transform:translateY(-1px);
-      box-shadow:0 4px 12px rgba(59,130,246,.3);
+      box-shadow:0 4px 12px rgba(59,130,246,.4);
     }
 
     .controls{
@@ -161,7 +176,7 @@
       margin-bottom:var(--gap-sm);
     }
 
-    /* 單欄直式布局 - 類似圖片中的排版 */
+    /* 修改：手機版也保持水平對齊 */
     .case-item{
       display: flex;
       flex-direction: column;
@@ -170,24 +185,20 @@
 
     .case-row{
       display: flex;
-      flex-direction: column;
-      gap: 4px;
+      flex-direction: row; /* 手機版也保持水平排列 */
+      align-items: flex-start;
+      gap: var(--gap-sm);
       margin-bottom: var(--gap-sm);
     }
 
-    @media (min-width:480px){
-      .case-row{
-        flex-direction: row;
-        align-items: flex-start;
-      }
-    }
-
     .case-label{ 
-      min-width: 5em; 
+      min-width: 5.5em; /* 稍微增加最小寬度確保對齊 */
       color:var(--muted); 
       font-weight:600; 
       font-size:clamp(.85rem,1.8vw,.95rem);
       flex-shrink: 0;
+      text-align: right; /* 文字右對齊更整齊 */
+      padding-top: 2px; /* 微調垂直對齊 */
     }
 
     .case-value{ 
@@ -228,6 +239,7 @@
       padding: var(--pad-md);
       border-radius: 8px;
       border-left: 3px solid var(--brand);
+      margin-top: 2px; /* 微調對齊 */
     }
 
     .thumbs{ 
@@ -326,12 +338,29 @@
         transform: none;
       }
     }
+
+    /* 超小手機的微調 */
+    @media (max-width: 360px) {
+      .case-row {
+        gap: 6px;
+      }
+      .case-label {
+        min-width: 5em;
+        font-size: 0.8rem;
+      }
+      .case-value {
+        font-size: 0.9rem;
+      }
+    }
   </style>
 </head>
 <body>
   <div class="wrap">
+    <!-- 修改後的頂部標題區域 -->
     <div class="header">
-      <div><h1>新加州｜公設回報查詢</h1></div>
+      <div class="title-section">
+        <h1>新加州｜公設回報查詢</h1>
+      </div>
       <div class="main-actions">
         <a class="btn-primary" id="btnBack" href="#" target="_blank" rel="noopener">📝 我要回報</a>
       </div>
