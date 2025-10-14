@@ -3,200 +3,106 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <link rel="icon" type="image/x-icon" href="https://hyxjz.blogspot.com/favicon.ico">
+  <link rel="icon" href="https://hyxjz.blogspot.com/favicon.ico">
   <title>新加州｜住戶公設回報</title>
   <style>
     :root{
-      --font-base: clamp(16px, 2.4vw, 20px);
-      --font-lg:   clamp(20px, 3.2vw, 30px);
-      --font-xl:   clamp(24px, 4vw, 36px);
-      --bg:#eef5ff; --card:#ffffff; --ink:#0f172a; --muted:#6b7280;
-      --brand:#3b82f6; --ok:#16a34a; --warn:#d97706; --err:#dc2626;
-      --border:#dbe4ff; --field:#f8fbff;
-      --radius: 16px; --pad: clamp(12px, 2.3vw, 18px); --gap: clamp(10px, 2.2vw, 16px); --section-gap: clamp(16px, 3vw, 24px);
-      --deep-red: #8B0000;
+      --ink:#0f172a; --muted:#64748b; --brand:#3b82f6; --bg:#eef5ff;
+      --radius:16px; --gap:clamp(10px,2.4vw,16px);
     }
-    html, body { margin:0; font-size:var(--font-base); line-height:1.6; color:var(--ink);
-      font-family:"Noto Sans TC",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; min-height:100vh; }
-    body { background:linear-gradient(180deg,#eef5ff,#eaf2ff); padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); }
-
-    .wrap{ width:100%; max-width:min(900px, 100% - clamp(16px,3vw,32px)); margin:0 auto; padding: max(env(safe-area-inset-top),12px) 0 clamp(24px,4vw,32px); }
-    .card{ background:var(--card); border-radius: calc(var(--radius) + 2px); box-shadow:0 10px 30px rgba(3,7,18,.1); padding: clamp(16px, 3vw, 24px); margin: 0 auto; position:relative; }
-
-    /* 右上：我要回報（其實是回到這頁），左放空位，右上放到標題上方 */
-    .top-actions{
-      position:sticky; top:0; z-index:5; display:flex; justify-content:flex-end; padding:8px 0 0;
-      background:linear-gradient(180deg, rgba(238,245,255,.95), rgba(238,245,255,0));
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; font-family:"Noto Sans TC",system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+      color:var(--ink); background:linear-gradient(180deg,#eef5ff,#f6f9ff);
     }
-    .btn{ appearance:none; border:0; border-radius: calc(var(--radius) + 2px);
-      padding: clamp(10px,2.2vw,14px) clamp(14px,3vw,18px); font-weight:800; cursor:pointer;
-      font-size:clamp(0.95rem, 2.6vw, 1.2rem); transition:.2s; text-align:center; display:inline-flex; align-items:center; justify-content:center; gap:10px; text-decoration:none; }
+    .wrap{max-width:min(1100px,100% - clamp(16px,4vw,40px)); margin:0 auto; padding:clamp(12px,3vw,20px) 0;}
+    .topbar{
+      display:flex; justify-content:flex-end; align-items:center; gap:var(--gap); margin-bottom:var(--gap);
+    }
+    .btn{
+      appearance:none; border:0; border-radius:12px; padding:10px 14px; cursor:pointer; font-weight:800;
+      text-decoration:none; display:inline-flex; align-items:center; gap:8px; background:#e8f0ff; color:#0b1f44;
+    }
     .btn.primary{ background:var(--brand); color:#fff; }
-    .btn.link{ background: rgba(139,0,0,.12); color: var(--deep-red); border: 2px solid var(--deep-red); font-weight:900; }
-
-    /* 置頂按鈕 */
-    .back-top{
-      position:fixed; right:16px; bottom:16px; z-index:10;
-      opacity:0; pointer-events:none; transition:opacity .2s;
+    .card{
+      background:#fff; border-radius:18px; box-shadow:0 10px 30px rgba(3,7,18,.10);
+      padding: clamp(10px, 2vw, 14px);
     }
-    .back-top.show{ opacity:1; pointer-events:auto; }
-    .back-top .btn{ border-radius:999px; padding:12px 16px; }
+    /* 讓 iframe 在各裝置吃滿高度 */
+    .frame-wrap{width:100%; height:calc(100vh - 140px); min-height:600px; border-radius:14px; overflow:hidden}
+    iframe{width:100%; height:100%; border:0; display:block}
+    .fallback{margin-top:10px; color:var(--muted); font-size:14px}
+    .fallback a{color:var(--brand); font-weight:700; text-decoration:none}
 
-    h1{ margin: clamp(6px,1.5vw,12px) 0 clamp(8px,2vw,12px); font-size:var(--font-xl); text-align:center; }
-    p.sub{ margin:0 0 var(--section-gap); color:var(--muted); text-align:center; }
-
-    .field{ margin: clamp(16px, 3vw, 24px) 0; width:100%; }
-    label{ display:block; margin:0 0 clamp(8px,2vw,12px); font-weight:800; color:#0b1f44; }
-    input, select, textarea{ width:100%; background:var(--field); border:1px solid var(--border); border-radius:var(--radius); padding: clamp(14px,3vw,18px); font-size:1rem; transition:.2s; }
-    input:focus, select:focus, textarea:focus{ outline:none; border-color:var(--brand); box-shadow:0 0 0 3px rgba(59,130,246,.1); }
-    textarea{ min-height: clamp(140px, 35vw, 180px); resize: vertical; }
-    .hint{ font-size:.95rem; color:var(--muted); margin-top:6px; }
-
-    .grid{ display:block; width:100%; }
-    input[type="file"]{ padding: clamp(12px,2.5vw,16px); background:#fff; border:2px dashed var(--border); }
-
-    .actions{ display:flex; gap:var(--gap); flex-wrap:wrap; margin-top: clamp(24px,5vw,36px); justify-content:center; }
-    .status{ margin-top: clamp(16px,3vw,24px); font-size:1rem; padding: clamp(12px,2.5vw,16px); border-radius:var(--radius); text-align:center; }
-    .ok{ color:var(--ok); background: rgba(22,163,74,.1); } .warn{ color:var(--warn); background: rgba(217,119,6,.1); } .err{ color:var(--err); background: rgba(220,38,38,.1); }
+    /* 回頂端懸浮鈕 */
+    .to-top{
+      position:fixed; right:16px; bottom:16px; z-index:20;
+      background:#fff; border:2px solid #e5edff; border-radius:999px; padding:10px 14px;
+      font-weight:800; box-shadow:0 6px 20px rgba(3,7,18,.12);
+    }
+    @media (max-width:480px){
+      .frame-wrap{height:calc(100vh - 120px); min-height:70vh}
+      .btn{padding:12px 14px}
+    }
   </style>
 </head>
 <body>
-
   <div class="wrap">
+    <div class="topbar">
+      <!-- 換成你的清單頁（已經是 GitHub Pages） -->
+      <a class="btn" id="btnRecords" href="#" target="_blank" rel="noopener">📋 查看回報紀錄</a>
+    </div>
+
     <div class="card">
-      <div class="top-actions">
-        <!-- 右上角：公開查詢（GitHub 版），新分頁打開 -->
-        <a class="btn link" href="https://hyxjz2024-source.github.io/pr/index.html" target="_blank" rel="noopener">查看已回報（避免重複）</a>
+      <div class="frame-wrap">
+        <!-- 這裡嵌入 GAS /exec 表單 -->
+        <iframe id="formFrame"
+          src=""
+          loading="lazy"
+          allow="camera;microphone;fullscreen;clipboard-write"
+          referrerpolicy="no-referrer-when-downgrade">
+        </iframe>
       </div>
-
-      <h1>新加州｜住戶公設回報</h1>
-      <p class="sub">請提供清楚描述與照片，一同協助管委會提交給驗收廠商，同步整理於驗收報告，作為建商改善依據。</p>
-
-      <form id="reportForm" novalidate>
-        <div class="grid">
-          <div class="field">
-            <label>回報人（必填）</label>
-            <input name="reporter" required />
-          </div>
-          <div class="field">
-            <label>聯絡方式（必填）</label>
-            <input name="contact" required placeholder="市內電話或手機" />
-          </div>
-
-          <div class="field">
-            <label>住戶別</label>
-            <input name="unit" placeholder="例如：B6-6F…" />
-            <div class="hint">方便管委會比對；相同住戶重複案件可彙整。</div>
-          </div>
-          <div class="field">
-            <label>地點</label>
-            <select name="location" id="location" required>
-              <option value="">— 請選擇 —</option>
-              <option>A棟</option><option>B棟</option><option>C棟</option><option>D棟</option><option>E棟</option>
-              <option>大廳</option><option>停車場B1</option><option>停車場B2 (ABC棟B1)</option><option>停車場B3 (ABC棟B2)</option>
-              <option>其他</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="field" id="locNoteCol" style="display:none">
-          <label>地點說明（選「其他」才需填）</label>
-          <input name="location_note" placeholder="請補充具體位置，如：地下室 垃圾間旁" />
-        </div>
-
-        <div class="field">
-          <label>問題說明（最多 500 字）</label>
-          <textarea name="description" id="description" required placeholder="請描述問題具體情況、是否影響安全、持續時間…"></textarea>
-          <div class="hint"><span id="descCount">0</span>/500</div>
-        </div>
-
-        <div class="field">
-          <label>上傳照片（最多 5 張，單檔 ≤ 10MB）</label>
-          <input type="file" id="photos" accept="image/*" multiple />
-          <div class="hint">清晰、光線充足的照片有助於辨識。</div>
-        </div>
-
-        <div class="actions">
-          <button type="reset" class="btn">清除</button>
-          <button type="submit" class="btn primary">送出回報</button>
-        </div>
-        <div id="status" class="status"></div>
-      </form>
+      <div class="fallback" id="fallback" hidden>
+        若畫面未顯示，請改用
+        <a id="openNew" href="#" target="_blank" rel="noopener">在新分頁開啟表單</a>。
+      </div>
     </div>
   </div>
 
-  <!-- 回到頂層 -->
-  <div class="back-top" id="backTop">
-    <a href="#" class="btn primary" aria-label="回到頂層">▲ 回到頂層</a>
-  </div>
+  <a class="to-top" href="#">▲ 回到頂端</a>
 
   <script>
-    // ★ 換成你這次部署的 GAS /exec
-    const API_URL = "https://script.google.com/macros/s/AKfycbyEuG_5s5RhDD5fHPafkkneTb4lEkgah7xTS1Y_A3HBK468aAM89GxfDxZPWQn310Lq/exec";
+    // === 這兩個請改成你的網址 ===
+    const FORM_URL   = "https://script.google.com/macros/s/AKfycbxDrA-yXF_J1Eq4ICPu0NX8dVzXCe5s_lSABl3Q-KZfXJMrYK4y5SdF-4o6Gng1qM02/exec"; // GAS 表單 /exec
+    const RECORD_URL = "https://hyxjz2024-source.github.io/pr/index.html"; // 你的清單頁
+    // =========================
 
-    // 地點＝其他 → 顯示補充欄位
-    const sel = document.getElementById('location');
-    const locNoteCol = document.getElementById('locNoteCol');
-    sel.addEventListener('change', ()=>{ locNoteCol.style.display = (sel.value==='其他') ? 'block' : 'none'; });
+    // 設定按鈕與 iframe 來源
+    document.getElementById('btnRecords').href = RECORD_URL;
+    const frame = document.getElementById('formFrame');
+    frame.src = FORM_URL;
 
-    // 文字計數
-    const desc = document.getElementById('description');
-    const cnt = document.getElementById('descCount');
-    desc.addEventListener('input', ()=>{ cnt.textContent = Math.min(500, desc.value.length); if(desc.value.length>500){ desc.value = desc.value.slice(0,500); } });
-
-    // 回到頂層按鈕顯示/隱藏
-    const backTop = document.getElementById('backTop');
-    window.addEventListener('scroll', () => {
-      if (window.scrollY > 240) backTop.classList.add('show');
-      else backTop.classList.remove('show');
-    });
-
-    // 表單送出：用 FormData 直接 POST 到 GAS
-    const form = document.getElementById('reportForm');
-    const statusEl = document.getElementById('status');
-
-    form.addEventListener('submit', async (e)=>{
-      e.preventDefault();
-      statusEl.textContent = '上傳中…';
-      statusEl.className = 'status';
-
-      try{
-        if(!form.reporter.value.trim() || !form.contact.value.trim()){
-          statusEl.textContent = '請填寫「回報人」與「聯絡方式」。';
-          statusEl.className = 'status warn';
-          return;
+    // 若被瀏覽器或 header 擋住無法載入，顯示備援連結
+    frame.addEventListener('error', () => showFallback());
+    frame.addEventListener('load', () => {
+      // 嘗試偵測空白載入（有些瀏覽器不丟 error）
+      setTimeout(() => {
+        try {
+          // 跨網域無法讀取內容，這裡只當成載入成功就好
+          document.getElementById('fallback').hidden = true;
+        } catch (e) {
+          // 什麼都不做
         }
-
-        // 組 FormData（這會是 multipart/form-data，GAS 的 doPost 可從 e.parameter / e.files 取）
-        const fd = new FormData(form);
-
-        // 檔案限制與加入
-        const files = Array.from(document.getElementById('photos').files || []);
-        if (files.length > 5) throw new Error('最多 5 張照片');
-        for (const f of files) {
-          if (f.size/1024/1024 > 10) throw new Error(`單檔不可超過 10MB：${f.name}`);
-        }
-        // 關鍵：用同一鍵名 'photos' 重複 append，GAS 端 e.files['photos'] 會是陣列
-        for (const f of files) fd.append('photos', f, f.name);
-
-        // 送出：不加自訂 headers，避免 CORS 預檢
-        const resp = await fetch(API_URL, { method:'POST', body: fd, redirect:'follow' });
-        // 有些情況 Apps Script 會 302，到最後仍是 JSON；用 resp.json() 嘗試即可
-        let data = null;
-        try { data = await resp.json(); } catch(_) { /* 不是 JSON 就丟錯 */ }
-
-        // 同時相容 {success:true} 或 {ok:true}
-        const ok = data && (data.success === true || data.ok === true);
-        if (!ok) throw new Error((data && (data.message || data.error)) || ('HTTP ' + resp.status));
-
-        statusEl.innerHTML = `✅ ${data.message || '感謝您的回饋，我們已經收到！'}<br>案件編號：<b>${data.caseId || '(未回傳編號)'}</b>`;
-        statusEl.className = 'status ok';
-        form.reset(); cnt.textContent = 0; sel.dispatchEvent(new Event('change'));
-      }catch(err){
-        statusEl.textContent = '上傳失敗：' + (err && err.message || err || '未知錯誤');
-        statusEl.className = 'status err';
-      }
+      }, 1200);
     });
+    function showFallback(){
+      const fb = document.getElementById('fallback');
+      const a  = document.getElementById('openNew');
+      a.href = FORM_URL;
+      fb.hidden = false;
+    }
   </script>
 </body>
 </html>
