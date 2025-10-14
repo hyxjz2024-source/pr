@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <link rel="icon" href="https://hyxjz.blogspot.com/favicon.ico">
-  <title>新加州｜住戶公設回報</title>
+  <title>新加州｜住戶公設回報（嵌入版）</title>
   <style>
     :root{
       --ink:#0f172a; --muted:#64748b; --brand:#3b82f6; --bg:#eef5ff;
@@ -29,20 +29,19 @@
       background:#fff; border-radius:18px; box-shadow:0 10px 30px rgba(3,7,18,.10);
       padding: clamp(10px, 2vw, 14px);
     }
-    /* 讓 iframe 在各裝置吃滿高度 */
-    .frame-wrap{width:100%; height:calc(100vh - 140px); min-height:600px; border-radius:14px; overflow:hidden}
+    .frame-wrap{width:100%; height:calc(100vh - 180px); min-height:600px; border-radius:14px; overflow:hidden}
     iframe{width:100%; height:100%; border:0; display:block}
     .fallback{margin-top:10px; color:var(--muted); font-size:14px}
     .fallback a{color:var(--brand); font-weight:700; text-decoration:none}
-
-    /* 回頂端懸浮鈕 */
-    .to-top{
-      position:fixed; right:16px; bottom:16px; z-index:20;
-      background:#fff; border:2px solid #e5edff; border-radius:999px; padding:10px 14px;
-      font-weight:800; box-shadow:0 6px 20px rgba(3,7,18,.12);
+    .footer{
+      text-align:center;
+      margin-top: clamp(16px,3vw,24px);
+      font-size: clamp(0.9rem,2vw,1rem);
+      color: var(--muted);
+      line-height: 1.6;
     }
     @media (max-width:480px){
-      .frame-wrap{height:calc(100vh - 120px); min-height:70vh}
+      .frame-wrap{height:calc(100vh - 160px); min-height:70vh}
       .btn{padding:12px 14px}
     }
   </style>
@@ -50,13 +49,11 @@
 <body>
   <div class="wrap">
     <div class="topbar">
-      <!-- 換成你的清單頁（已經是 GitHub Pages） -->
-      <a class="btn" id="btnRecords" href="#" target="_blank" rel="noopener">📋 查看回報紀錄</a>
+      <a class="btn" id="btnRecords" href="#" target="_blank" rel="noopener">📋 請查看已回報紀錄，避免重複回報</a>
     </div>
 
     <div class="card">
       <div class="frame-wrap">
-        <!-- 這裡嵌入 GAS /exec 表單 -->
         <iframe id="formFrame"
           src=""
           loading="lazy"
@@ -69,34 +66,30 @@
         <a id="openNew" href="#" target="_blank" rel="noopener">在新分頁開啟表單</a>。
       </div>
     </div>
+
+    <div class="footer">
+      感謝各位鄰居們的協助，以上資料將提交給驗收廠商，<br>
+      同步整理於驗收報告，作為建商改善依據。
+    </div>
   </div>
 
-  <a class="to-top" href="#">▲ 回到頂端</a>
-
   <script>
-    // === 這兩個請改成你的網址 ===
-    const FORM_URL   = "https://script.google.com/macros/s/AKfycbxDrA-yXF_J1Eq4ICPu0NX8dVzXCe5s_lSABl3Q-KZfXJMrYK4y5SdF-4o6Gng1qM02/exec"; // GAS 表單 /exec
-    const RECORD_URL = "https://hyxjz2024-source.github.io/pr/index.html"; // 你的清單頁
-    // =========================
+    const FORM_URL   = "https://script.google.com/macros/s/AKfycbxDrA-yXF_J1Eq4ICPu0NX8dVzXCe5s_lSABl3Q-KZfXJMrYK4y5SdF-4o6Gng1qM02/exec";  // GAS 表單網址
+    const RECORD_URL = "https://hyxjz2024-source.github.io/pr/index.html";  // 查看紀錄頁
 
-    // 設定按鈕與 iframe 來源
     document.getElementById('btnRecords').href = RECORD_URL;
     const frame = document.getElementById('formFrame');
     frame.src = FORM_URL;
 
-    // 若被瀏覽器或 header 擋住無法載入，顯示備援連結
     frame.addEventListener('error', () => showFallback());
     frame.addEventListener('load', () => {
-      // 嘗試偵測空白載入（有些瀏覽器不丟 error）
       setTimeout(() => {
         try {
-          // 跨網域無法讀取內容，這裡只當成載入成功就好
           document.getElementById('fallback').hidden = true;
-        } catch (e) {
-          // 什麼都不做
-        }
+        } catch (e) {}
       }, 1200);
     });
+
     function showFallback(){
       const fb = document.getElementById('fallback');
       const a  = document.getElementById('openNew');
