@@ -44,7 +44,7 @@
   <div class="wrap">
     <header class="hero">
       <h1>新加州｜公設總驗收</h1>
-      <h2>分組說明＋住戶參加報名</h2>
+      <h2>分組說明＋住戶報名</h2>
       <div class="meta">時間：10/24（五）09:00–17:00｜總驗收（除電梯外）</div>
       <div class="meta">時間：10/31（五）09:00–17:00｜社區電梯驗收</div>
       <div class="meta">集合地點：社區大廳</div>
@@ -96,12 +96,12 @@
         </form>
       </aside>
     </div>
-</div>
+  </div>
 
   <div class="toast" id="toast"></div>
 
   <script>
-    // === 1) 組別資料（可自行微調說明） ===
+    // === 1) 組別資料 ===
     const GROUPS = [
       {id:1, name:"全流程＋斷電", desc:"委員(住戶)與廠商進行全區斷電/拍照/紀錄，統籌協調。"},
       {id:2, name:"電氣", desc:"配電盤/電表/迴路/接地測試，量測電壓電流與安全性。"},
@@ -136,7 +136,7 @@
       setTimeout(()=>{ el.style.display='none'; }, 3600);
     };
 
-    // === 3) 送出表單（改這裡）===
+    // === 3) 送出表單（已改 text/plain）===
     const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxjsdV-saI39Ku_avAGJYNWn8-oAuASz1wGGp9oquiUU9ruOMeLzDYvmX2ZtMcfzOrg/exec';
 
     const form = document.getElementById('signupForm');
@@ -151,7 +151,6 @@
 
       btn.disabled = true; btn.textContent = '傳送中…';
       try{
-        // ★ 這三行是關鍵：用 text/plain，避免預檢；回應先取文字再轉 JSON
         const res = await fetch(WEB_APP_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'text/plain;charset=utf-8' },
