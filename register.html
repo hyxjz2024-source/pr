@@ -1,85 +1,173 @@
 <!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>新加州｜10/24 總驗收分組說明＋報名</title>
+  <meta name="description" content="10/24 公設總驗收分組說明與住戶報名（GitHub+GAS）" />
+  <style>
+    :root{
+      --ink:#0f172a; --muted:#64748b; --brand:#0ea5e9; --ok:#16a34a; --err:#dc2626; --bg:#f8fafc; --card:#ffffff; --radius:16px;
+    }
+    *{box-sizing:border-box}
+    body{margin:0; font-family:"Noto Sans TC", system-ui, -apple-system, Segoe UI, Roboto, sans-serif; color:var(--ink); background:var(--bg);}    
+    .wrap{max-width:min(1080px,100% - 24px); margin:24px auto;}
+    header{display:grid; gap:10px; margin-bottom:20px}
+    .hero{background:linear-gradient(135deg,#e0f2fe,#fff); padding:20px; border-radius:var(--radius); box-shadow:0 6px 18px rgba(15,23,42,.06)}
+    h1{margin:0 0 6px; font-size:clamp(22px,3.2vw,32px)}
+    .meta{color:var(--muted); font-size:14px}
 
+    .grid{display:grid; gap:14px}
+    @media (min-width:900px){ .grid{grid-template-columns: 1fr 360px;} }
 
-<script>
-// === 1) 組別資料（可自行微調說明） ===
-const GROUPS = [
-{id:1, name:"帶委員＋斷電", desc:"委員與廠商進行全區斷電/拍照/紀錄，統籌協調。"},
-{id:2, name:"電氣", desc:"配電盤/電表/迴路/接地測試，量測電壓電流與安全性。"},
-{id:3, name:"發電機", desc:"模擬停電、ATS 轉換、備援供電與警報功能檢測。"},
-{id:4, name:"消防電", desc:"消防控制盤、警報與設備之電氣連動測試。"},
-{id:5, name:"消防水", desc:"消防泵浦供水、放水/壓力/泡沫測試與連動。"},
-{id:6, name:"給排水", desc:"供水、排水、抽水機與集水井等動靜態檢查。"},
-{id:7, name:"弱電", desc:"門禁、對講、監控、網路與機房配線/設備檢查。"},
-{id:8, name:"通風空調", desc:"地下室通風/導流風機運轉，連動/風量/異音檢查。"},
-{id:9, name:"土建", desc:"結構外觀、牆面/地坪/公共區域缺失總點檢。"},
-{id:10, name:"電梯", desc:"升降/調速/緊停/井道/照明/標示/溝通等安全檢查。"}
-];
+    .card{background:var(--card); border-radius:var(--radius); padding:16px; box-shadow:0 6px 18px rgba(15,23,42,.06)}
+    .list{display:grid; gap:10px}
+    .item{border:1px solid #e5e7eb; border-radius:14px; padding:12px}
+    .item h3{margin:0 0 6px; font-size:18px}
+    .item p{margin:0; color:var(--muted); font-size:14px}
 
+    form{display:grid; gap:10px}
+    label{font-weight:600}
+    input,select,button,textarea{width:100%; padding:10px 12px; border:1px solid #e5e7eb; border-radius:12px; font:inherit}
+    textarea{min-height:90px}
+    button{background:var(--brand); color:#fff; border:none; cursor:pointer; font-weight:700}
+    button[disabled]{opacity:.6; cursor:not-allowed}
 
-const list = document.getElementById('groupList');
-const select = document.getElementById('groupSelect');
-GROUPS.forEach(g => {
-const div = document.createElement('div');
-div.className = 'item';
-div.innerHTML = `<h3>${g.id}. ${g.name}</h3><p>${g.desc}</p>`;
-list.appendChild(div);
+    .toast{position:fixed; inset:auto 16px 16px auto; background:#fff; border:1px solid #e5e7eb; box-shadow:0 6px 20px rgba(15,23,42,.12); padding:10px 12px; border-radius:12px; display:none}
+    .toast.ok{border-color:#bbf7d0}
+    .toast.err{border-color:#fecaca}
+    .hint{font-size:12px; color:var(--muted)}
+    .req{color:#ef4444}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="hero">
+      <h1>10/24 公設總驗收｜分組說明＋住戶報名</h1>
+      <div class="meta">時間：10/24（五）09:00–17:00｜集合地點：社區大廳｜主辦：管委會 × 建商 × 國霖機電</div>
+      <div class="hint">備註：可依個人時段擇一報名；若能全程參與更好（中午 11:30–13:00 休息）。</div>
+    </header>
 
+    <div class="grid">
+      <!-- 左側：說明清單 -->
+      <section class="card">
+        <h2 style="margin-top:0">分組與基礎說明</h2>
+        <div class="list" id="groupList"></div>
+      </section>
 
-const opt = document.createElement('option');
-opt.value = `${g.id}. ${g.name}`;
-opt.textContent = `${g.id}. ${g.name}`;
-select.appendChild(opt);
-});
+      <!-- 右側：報名表單 -->
+      <aside class="card">
+        <h2 style="margin-top:0">我要報名</h2>
+        <form id="signupForm" novalidate>
+          <div>
+            <label>姓名 <span class="req">*</span></label>
+            <input name="name" required placeholder="例：王小明" />
+          </div>
+          <div>
+            <label>棟別／樓層 <span class="req">*</span></label>
+            <input name="unit" required placeholder="例：C 棟 12F" />
+          </div>
+          <div>
+            <label>聯絡手機 <span class="req">*</span></label>
+            <input name="phone" required inputmode="numeric" placeholder="09xx-xxx-xxx" />
+          </div>
+          <div>
+            <label>報名組別 <span class="req">*</span></label>
+            <select name="group" required id="groupSelect"></select>
+          </div>
+          <div>
+            <label>可參與時段</label>
+            <select name="slot">
+              <option value="全程(09:00–17:00)">全程(09:00–17:00)</option>
+              <option value="上午(09:00–11:30)">上午(09:00–11:30)</option>
+              <option value="下午(13:00–17:00)">下午(13:00–17:00)</option>
+            </select>
+          </div>
+          <div>
+            <label>備註（選填）</label>
+            <textarea name="note" placeholder="想跟哪位鄰居同組、具備相關專長等"></textarea>
+          </div>
 
+          <button id="submitBtn" type="submit">送出報名</button>
+          <div class="hint">送出後將寫入管委會指定的 Google 試算表；不另行蒐集其他資料。</div>
+        </form>
+      </aside>
+    </div>
+  </div>
 
-// === 2) 提示 ===
-const toast = (msg, ok=false) => {
-const el = document.getElementById('toast');
-el.textContent = msg; el.className = `toast ${ok? 'ok':'err'}`; el.style.display = 'block';
-setTimeout(()=>{ el.style.display='none'; }, 3600);
-};
+  <div class="toast" id="toast"></div>
 
+  <script>
+    // === 1) 組別資料（可自行微調說明） ===
+    const GROUPS = [
+      {id:1, name:"帶委員＋斷電", desc:"委員與廠商進行全區斷電/拍照/紀錄，統籌協調。"},
+      {id:2, name:"電氣", desc:"配電盤/電表/迴路/接地測試，量測電壓電流與安全性。"},
+      {id:3, name:"發電機", desc:"模擬停電、ATS 轉換、備援供電與警報功能檢測。"},
+      {id:4, name:"消防電", desc:"消防控制盤、警報與設備之電氣連動測試。"},
+      {id:5, name:"消防水", desc:"消防泵浦供水、放水/壓力/泡沫測試與連動。"},
+      {id:6, name:"給排水", desc:"供水、排水、抽水機與集水井等動靜態檢查。"},
+      {id:7, name:"弱電", desc:"門禁、對講、監控、網路與機房配線/設備檢查。"},
+      {id:8, name:"通風空調", desc:"地下室通風/導流風機運轉，連動/風量/異音檢查。"},
+      {id:9, name:"土建", desc:"結構外觀、牆面/地坪/公共區域缺失總點檢。"},
+      {id:10, name:"電梯", desc:"升降/調速/緊停/井道/照明/標示/溝通等安全檢查。"}
+    ];
 
-// === 3) 送出表單 ===
-const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwBuZcbrzrJ6PhJqoKp-J4x0jt7XhRVnkfdbNNXtu5rihbsq62CBXfzuaQY26WbqNdF/exec'; // ← 替換
+    const list = document.getElementById('groupList');
+    const select = document.getElementById('groupSelect');
+    GROUPS.forEach(g => {
+      const div = document.createElement('div');
+      div.className = 'item';
+      div.innerHTML = `<h3>${g.id}. ${g.name}</h3><p>${g.desc}</p>`;
+      list.appendChild(div);
 
+      const opt = document.createElement('option');
+      opt.value = `${g.id}. ${g.name}`;
+      opt.textContent = `${g.id}. ${g.name}`;
+      select.appendChild(opt);
+    });
 
-const form = document.getElementById('signupForm');
-const btn = document.getElementById('submitBtn');
+    // === 2) 提示 ===
+    const toast = (msg, ok=false) => {
+      const el = document.getElementById('toast');
+      el.textContent = msg; el.className = `toast ${ok? 'ok':'err'}`; el.style.display = 'block';
+      setTimeout(()=>{ el.style.display='none'; }, 3600);
+    };
 
+    // === 3) 送出表單 ===
+    const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwBuZcbrzrJ6PhJqoKp-J4x0jt7XhRVnkfdbNNXtu5rihbsq62CBXfzuaQY26WbqNdF/exec'; // ← 替換
 
-form.addEventListener('submit', async (e)=>{
-e.preventDefault();
-if(!form.reportValidity()) return;
+    const form = document.getElementById('signupForm');
+    const btn  = document.getElementById('submitBtn');
 
+    form.addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      if(!form.reportValidity()) return;
 
-// 收集欄位
-const data = Object.fromEntries(new FormData(form).entries());
-data._ts = new Date().toISOString();
+      // 收集欄位
+      const data = Object.fromEntries(new FormData(form).entries());
+      data._ts = new Date().toISOString();
 
-
-btn.disabled = true; btn.textContent = '傳送中…';
-try{
-const res = await fetch(WEB_APP_URL, {
-method: 'POST',
-headers: {'Content-Type':'application/json'},
-body: JSON.stringify({action:'signup', payload: data})
-});
-const json = await res.json();
-if(json?.ok){
-toast('報名成功，感謝參與！', true);
-form.reset();
-}else{
-throw new Error(json?.message || '發生未知錯誤');
-}
-}catch(err){
-console.error(err);
-toast('送出失敗：' + err.message);
-}finally{
-btn.disabled = false; btn.textContent = '送出報名';
-}
-});
-</script>
+      btn.disabled = true; btn.textContent = '傳送中…';
+      try{
+        const res = await fetch(WEB_APP_URL, {
+          method: 'POST',
+          headers: {'Content-Type':'application/json'},
+          body: JSON.stringify({action:'signup', payload: data})
+        });
+        const json = await res.json();
+        if(json?.ok){
+          toast('報名成功，感謝參與！', true);
+          form.reset();
+        }else{
+          throw new Error(json?.message || '發生未知錯誤');
+        }
+      }catch(err){
+        console.error(err);
+        toast('送出失敗：' + err.message);
+      }finally{
+        btn.disabled = false; btn.textContent = '送出報名';
+      }
+    });
+  </script>
 </body>
 </html>
