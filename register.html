@@ -1,0 +1,85 @@
+<!doctype html>
+
+
+<script>
+// === 1) 組別資料（可自行微調說明） ===
+const GROUPS = [
+{id:1, name:"帶委員＋斷電", desc:"委員與廠商進行全區斷電/拍照/紀錄，統籌協調。"},
+{id:2, name:"電氣", desc:"配電盤/電表/迴路/接地測試，量測電壓電流與安全性。"},
+{id:3, name:"發電機", desc:"模擬停電、ATS 轉換、備援供電與警報功能檢測。"},
+{id:4, name:"消防電", desc:"消防控制盤、警報與設備之電氣連動測試。"},
+{id:5, name:"消防水", desc:"消防泵浦供水、放水/壓力/泡沫測試與連動。"},
+{id:6, name:"給排水", desc:"供水、排水、抽水機與集水井等動靜態檢查。"},
+{id:7, name:"弱電", desc:"門禁、對講、監控、網路與機房配線/設備檢查。"},
+{id:8, name:"通風空調", desc:"地下室通風/導流風機運轉，連動/風量/異音檢查。"},
+{id:9, name:"土建", desc:"結構外觀、牆面/地坪/公共區域缺失總點檢。"},
+{id:10, name:"電梯", desc:"升降/調速/緊停/井道/照明/標示/溝通等安全檢查。"}
+];
+
+
+const list = document.getElementById('groupList');
+const select = document.getElementById('groupSelect');
+GROUPS.forEach(g => {
+const div = document.createElement('div');
+div.className = 'item';
+div.innerHTML = `<h3>${g.id}. ${g.name}</h3><p>${g.desc}</p>`;
+list.appendChild(div);
+
+
+const opt = document.createElement('option');
+opt.value = `${g.id}. ${g.name}`;
+opt.textContent = `${g.id}. ${g.name}`;
+select.appendChild(opt);
+});
+
+
+// === 2) 提示 ===
+const toast = (msg, ok=false) => {
+const el = document.getElementById('toast');
+el.textContent = msg; el.className = `toast ${ok? 'ok':'err'}`; el.style.display = 'block';
+setTimeout(()=>{ el.style.display='none'; }, 3600);
+};
+
+
+// === 3) 送出表單 ===
+const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwBuZcbrzrJ6PhJqoKp-J4x0jt7XhRVnkfdbNNXtu5rihbsq62CBXfzuaQY26WbqNdF/exec'; // ← 替換
+
+
+const form = document.getElementById('signupForm');
+const btn = document.getElementById('submitBtn');
+
+
+form.addEventListener('submit', async (e)=>{
+e.preventDefault();
+if(!form.reportValidity()) return;
+
+
+// 收集欄位
+const data = Object.fromEntries(new FormData(form).entries());
+data._ts = new Date().toISOString();
+
+
+btn.disabled = true; btn.textContent = '傳送中…';
+try{
+const res = await fetch(WEB_APP_URL, {
+method: 'POST',
+headers: {'Content-Type':'application/json'},
+body: JSON.stringify({action:'signup', payload: data})
+});
+const json = await res.json();
+if(json?.ok){
+toast('報名成功，感謝參與！', true);
+form.reset();
+}else{
+throw new Error(json?.message || '發生未知錯誤');
+}
+}catch(err){
+console.error(err);
+toast('送出失敗：' + err.message);
+}finally{
+btn.disabled = false; btn.textContent = '送出報名';
+}
+});
+</script>
+</body>
+</html>
