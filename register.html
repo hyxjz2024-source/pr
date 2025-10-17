@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>新加州｜10/24 總驗收分組說明＋報名</title>
-  <meta name="description" content="10/24 公設總驗收分組說明與住戶報名（GitHub+GAS）" />
+  <title>新加州｜總驗收分組說明＋報名</title>
+  <meta name="description" content="公設總驗收分組說明與住戶報名（GitHub+GAS）" />
   <style>
     :root{
       --ink:#0f172a; --muted:#64748b; --brand:#0ea5e9; --ok:#16a34a; --err:#dc2626; --bg:#f8fafc; --card:#ffffff; --radius:16px;
@@ -43,9 +43,12 @@
 <body>
   <div class="wrap">
     <header class="hero">
-      <h1>10/24 公設總驗收｜分組說明＋住戶報名</h1>
-      <div class="meta">時間：10/24（五）09:00–17:00｜集合地點：社區大廳｜主辦：管委會 × 建商 × 國霖機電</div>
-      <div class="hint">備註：可依個人時段擇一報名；若能全程參與更好（中午 11:30–13:00 休息）。</div>
+      <h1>新加州｜公設總驗收｜分組說明＋住戶報名</h1>
+      <div class="meta">時間：10/24（五）09:00–17:00｜總驗收（除電梯外）</div>
+	  <div class="meta">時間：10/31（五）09:00–17:00｜社區電梯驗收</div>
+	  <div class="meta">集合地點：社區大廳</div>
+	<div class="meta">參加人員：管委會/住戶 × 建商/廠商 × 國霖機電 </div>
+
     </header>
 
     <div class="grid">
@@ -89,7 +92,7 @@
           </div>
 
           <button id="submitBtn" type="submit">送出報名</button>
-          <div class="hint">送出後將寫入管委會指定的 Google 試算表；不另行蒐集其他資料。</div>
+          <div class="hint">資料主要用於本次驗收，與社區內專業討論。</div>
         </form>
       </aside>
     </div>
@@ -100,7 +103,7 @@
   <script>
     // === 1) 組別資料（可自行微調說明） ===
     const GROUPS = [
-      {id:1, name:"帶委員＋斷電", desc:"委員與廠商進行全區斷電/拍照/紀錄，統籌協調。"},
+      {id:1, name:"全流程＋斷電", desc:"委員(住戶)與廠商進行全區斷電/拍照/紀錄，統籌協調。"},
       {id:2, name:"電氣", desc:"配電盤/電表/迴路/接地測試，量測電壓電流與安全性。"},
       {id:3, name:"發電機", desc:"模擬停電、ATS 轉換、備援供電與警報功能檢測。"},
       {id:4, name:"消防電", desc:"消防控制盤、警報與設備之電氣連動測試。"},
