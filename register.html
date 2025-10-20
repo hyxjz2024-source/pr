@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>新加州｜總驗收分組說明＋報名</title>
+  <title>新加州｜10/24 公設總驗收報名</title>
   <meta name="description" content="公設總驗收分組說明與住戶報名（GitHub+GAS）" />
   <style>
     :root{
@@ -43,18 +43,21 @@
 <body>
   <div class="wrap">
     <header class="hero">
-      <h1>新加州｜公設總驗收</h1>
-      <h2>分組說明＋住戶驗收報名</h2>
-      <div class="meta">時間：10/24（五）09:00–17:00｜總驗收（除電梯外）</div>
-      <div class="meta">時間：10/31（五）09:00–17:00｜社區電梯驗收</div>
-      <div class="meta">集合地點：社區大廳</div>
-      <div class="meta">參加人員：管委會/住戶 × 建商/廠商 × 國霖機電 </div>
+      <h1>新加州｜10/24 公設總驗收</h1>
+      <h2>分組說明＋住戶報名</h2>
+      <div class="meta">📅 時間：10/24（五）09:00–17:00｜全區公設驗收（除電梯外）</div>
+      <div class="meta">📍 集合地點：社區大廳</div>
+      <div class="meta">👥 參加人員：管委會／住戶 × 建商／廠商 × 國霖機電</div>
+      <div class="meta" style="margin-top:6px; color:#334155;">
+        💡 住戶可全程參與，中途若有事可自由離開，不影響流程。<br>
+        歡迎大家依自身時間彈性參加，一起了解社區各項設備運作。
+      </div>
     </header>
 
     <div class="grid">
       <!-- 左側：說明清單 -->
       <section class="card">
-        <h2 style="margin-top:0">分組與基礎說明</h2>
+        <h2 style="margin-top:0">分組與說明</h2>
         <div class="list" id="groupList"></div>
       </section>
 
@@ -88,11 +91,11 @@
           </div>
           <div>
             <label>備註（選填）</label>
-            <textarea name="note" placeholder="想跟哪位鄰居同組、具備相關專長等"></textarea>
+            <textarea name="note" placeholder="想與哪位鄰居同組、或有專長可協助等"></textarea>
           </div>
 
           <button id="submitBtn" type="submit">送出報名</button>
-          <div class="hint">資料主要用於本次驗收，與社區內專業討論。</div>
+          <div class="hint">報名資料僅用於本次驗收之現場安排與紀錄。</div>
         </form>
       </aside>
     </div>
@@ -103,16 +106,15 @@
   <script>
     // === 1) 組別資料 ===
     const GROUPS = [
-      {id:1, name:"全流程＋斷電", desc:"委員(住戶)與廠商進行全區斷電/拍照/紀錄，統籌協調。"},
-      {id:2, name:"電氣", desc:"配電盤/電表/迴路/接地測試，量測電壓電流與安全性。"},
-      {id:3, name:"發電機", desc:"模擬停電、ATS 轉換、備援供電與警報功能檢測。"},
-      {id:4, name:"消防電", desc:"消防控制盤、警報與設備之電氣連動測試。"},
-      {id:5, name:"消防水", desc:"消防泵浦供水、放水/壓力/泡沫測試與連動。"},
-      {id:6, name:"給排水", desc:"供水、排水、抽水機與集水井等動靜態檢查。"},
-      {id:7, name:"弱電", desc:"門禁、對講、監控、網路與機房配線/設備檢查。"},
-      {id:8, name:"通風空調", desc:"地下室通風/導流風機運轉，連動/風量/異音檢查。"},
-      {id:9, name:"土建", desc:"結構外觀、牆面/地坪/公共區域缺失總點檢。"},
-      {id:10, name:"電梯", desc:"升降/調速/緊停/井道/照明/標示/溝通等安全檢查。"}
+      {id:1, name:"全程參與組", desc:"適合想了解整體流程的住戶，由驗收專員帶領巡檢所有項目，全程觀察記錄。"},
+      {id:2, name:"電氣組", desc:"配電盤、電表、迴路、接地測試與電壓電流安全檢查。"},
+      {id:3, name:"發電機組", desc:"模擬停電、ATS切換、備援供電與警報功能測試。"},
+      {id:4, name:"消防電組", desc:"消防控制盤、警報設備電氣連動測試。"},
+      {id:5, name:"消防水組", desc:"消防泵浦供水、放水、壓力與泡沫測試及連動檢查。"},
+      {id:6, name:"給排水組", desc:"供水、排水、抽水機與集水井設備動靜態檢查。"},
+      {id:7, name:"弱電組", desc:"門禁、對講、監控、網路與機房設備檢查。"},
+      {id:8, name:"通風空調組", desc:"地下室通風與導流風機運轉、風量與異音檢測。"},
+      {id:9, name:"土建組", desc:"結構外觀、牆面、地坪、門框及公共區域缺失檢查。"}
     ];
 
     const list = document.getElementById('groupList');
@@ -136,7 +138,7 @@
       setTimeout(()=>{ el.style.display='none'; }, 3600);
     };
 
-    // === 3) 送出表單（已改 text/plain）===
+    // === 3) 送出表單（text/plain） ===
     const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycby26Pv-rQbQ6FDAt3ivxhCj-3jRS70hzfXyoZ1PsVvDamU45PK8EHrwSyhtRhK3HSxs/exec';
 
     const form = document.getElementById('signupForm');
