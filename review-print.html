@@ -2,8 +2,8 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>新加州｜公設回報列印版報告書</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>新加州｜住戶公設回報報告書（列印版）</title>
 <style>
   body {
     font-family: "Noto Sans TC", system-ui, -apple-system;
@@ -13,9 +13,9 @@
     padding: 0;
   }
   .wrap {
-    max-width: 900px;
+    max-width: 960px;
     margin: 0 auto;
-    padding: 40px 32px;
+    padding: 40px 24px;
   }
   header {
     display: flex;
@@ -26,9 +26,9 @@
     padding-bottom: 8px;
   }
   header h1 {
-    font-size: 1.6rem;
     margin: 0;
     color: #1e3a8a;
+    font-size: 1.5rem;
   }
   .print-btn {
     background: #3b82f6;
@@ -43,37 +43,30 @@
   @media print {
     .print-btn { display: none; }
   }
-  .case {
-    page-break-after: always;
-    border: 1px solid #dbe4ff;
-    border-radius: 10px;
-    padding: 24px;
+  table {
+    border-collapse: collapse;
+    width: 100%;
     margin-bottom: 40px;
-    box-shadow: 0 4px 10px rgba(0,0,0,.05);
+    page-break-after: always;
   }
-  .case h2 {
-    margin-top: 0;
-    color: #2563eb;
-    font-size: 1.2rem;
-  }
-  .meta {
-    margin-bottom: 16px;
-  }
-  .meta div {
-    margin-bottom: 6px;
+  th, td {
+    border: 1px solid #94a3b8;
+    padding: 10px 12px;
     font-size: 0.95rem;
+    vertical-align: top;
   }
-  .meta-label {
-    color: #64748b;
-    font-weight: 600;
-    display: inline-block;
-    width: 6em;
+  th {
+    background: #e2e8f0;
+    text-align: left;
+    width: 18%;
+  }
+  .case-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #2563eb;
+    margin-bottom: 4px;
   }
   .desc {
-    background: #f9fbff;
-    border-left: 3px solid #3b82f6;
-    padding: 12px;
-    margin-bottom: 20px;
     white-space: pre-wrap;
     line-height: 1.6;
   }
@@ -81,12 +74,13 @@
     display: flex;
     flex-wrap: wrap;
     gap: 12px;
+    margin-top: 8px;
   }
   .images img {
     width: 100%;
-    max-width: 360px;
-    border-radius: 8px;
-    border: 1px solid #e5edff;
+    max-width: 400px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
     object-fit: contain;
   }
   footer {
@@ -118,6 +112,11 @@
 const API_URL = "https://script.google.com/macros/s/AKfycbyEuG_5s5RhDD5fHPafkkneTb4lEkgah7xTS1Y_A3HBK468aAM89GxfDxZPWQn310Lq/exec";
 const content = document.getElementById('content');
 
+function extractId(url) {
+  const m = url.match(/\/d\/([A-Za-z0-9_-]{10,})\//) || url.match(/id=([A-Za-z0-9_-]{10,})/);
+  return m ? m[1] : null;
+}
+
 fetch(`${API_URL}?api=public&limit=500&_=${Date.now()}`)
   .then(r => r.json())
   .then(data => {
@@ -125,22 +124,39 @@ fetch(`${API_URL}?api=public&limit=500&_=${Date.now()}`)
       content.innerHTML = '<p style="color:#64748b;">目前尚無資料。</p>';
       return;
     }
-    content.innerHTML = data.map((it, i) => `
-      <section class="case">
-        <h2>案件 ${i + 1}　#${it.caseId || ''}</h2>
-        <div class="meta">
-          <div><span class="meta-label">回報時間：</span>${it.time || ''}</div>
-          <div><span class="meta-label">地點：</span>${it.location || ''}</div>
-          ${it.location_note ? `<div><span class="meta-label">地點說明：</span>${it.location_note}</div>` : ''}
-        </div>
-        <div class="desc">${(it.description || '').replace(/\n/g,'<br>')}</div>
-        ${(it.images && it.images.length) ? `
-          <div class="images">
-            ${it.images.map(img => `<img src="${img.viewUrl.replace('/view','/preview')}" alt="案件照片">`).join('')}
-          </div>
-        ` : '<div style="color:#9ca3af;">無上傳照片</div>'}
-      </section>
-    `).join('');
+    content.innerHTML = data.map((it, i) => {
+      const imgs = (it.images || []).map(img => {
+        const id = extractId(img.viewUrl);
+        return id
+          ? `<img src="https://drive.google.com/uc?export=view&id=${id}" alt="案件照片">`
+          : '';
+      }).join('');
+      return `
+        <table>
+          <tr>
+            <th colspan="2">
+              <div class="case-title">案件 ${i + 1}　#${it.caseId || ''}</div>
+            </th>
+          </tr>
+          <tr>
+            <th>回報時間</th><td>${it.time || ''}</td>
+          </tr>
+          <tr>
+            <th>地點</th><td>${it.location || ''}</td>
+          </tr>
+          ${it.location_note ? `<tr><th>地點說明</th><td>${it.location_note}</td></tr>` : ''}
+          <tr>
+            <th>問題說明</th><td class="desc">${(it.description || '').replace(/\n/g,'<br>')}</td>
+          </tr>
+          <tr>
+            <th>案件照片</th>
+            <td>
+              ${imgs ? `<div class="images">${imgs}</div>` : '<span style="color:#9ca3af;">無上傳照片</span>'}
+            </td>
+          </tr>
+        </table>
+      `;
+    }).join('');
   })
   .catch(err => {
     console.error(err);
