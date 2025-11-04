@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>新加州｜公設回報列印版報告書</title>
+<style>
+  body {
+    font-family: "Noto Sans TC", system-ui, -apple-system;
+    background: #fff;
+    color: #111;
+    margin: 0;
+    padding: 0;
+  }
+  .wrap {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 40px 32px;
+  }
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 3px solid #3b82f6;
+    margin-bottom: 24px;
+    padding-bottom: 8px;
+  }
+  header h1 {
+    font-size: 1.6rem;
+    margin: 0;
+    color: #1e3a8a;
+  }
+  .print-btn {
+    background: #3b82f6;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 8px 16px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    box-shadow: 0 2px 6px rgba(59,130,246,0.3);
+  }
+  @media print {
+    .print-btn { display: none; }
+  }
+  .case {
+    page-break-after: always;
+    border: 1px solid #dbe4ff;
+    border-radius: 10px;
+    padding: 24px;
+    margin-bottom: 40px;
+    box-shadow: 0 4px 10px rgba(0,0,0,.05);
+  }
+  .case h2 {
+    margin-top: 0;
+    color: #2563eb;
+    font-size: 1.2rem;
+  }
+  .meta {
+    margin-bottom: 16px;
+  }
+  .meta div {
+    margin-bottom: 6px;
+    font-size: 0.95rem;
+  }
+  .meta-label {
+    color: #64748b;
+    font-weight: 600;
+    display: inline-block;
+    width: 6em;
+  }
+  .desc {
+    background: #f9fbff;
+    border-left: 3px solid #3b82f6;
+    padding: 12px;
+    margin-bottom: 20px;
+    white-space: pre-wrap;
+    line-height: 1.6;
+  }
+  .images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .images img {
+    width: 100%;
+    max-width: 360px;
+    border-radius: 8px;
+    border: 1px solid #e5edff;
+    object-fit: contain;
+  }
+  footer {
+    text-align: center;
+    color: #6b7280;
+    font-size: 0.85rem;
+    margin-top: 40px;
+    border-top: 1px solid #e5e7eb;
+    padding-top: 8px;
+  }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>新加州社區｜住戶公設回報報告書</h1>
+      <button class="print-btn" onclick="window.print()">🖨 列印報告</button>
+    </header>
+
+    <div id="content">載入中...</div>
+
+    <footer>
+      感謝各位鄰居的協助，以上資料將提交給驗收廠商，<br>
+      同步整理於驗收報告，作為建商改善依據。
+    </footer>
+  </div>
+
+<script>
+const API_URL = "https://script.google.com/macros/s/AKfycbyEuG_5s5RhDD5fHPafkkneTb4lEkgah7xTS1Y_A3HBK468aAM89GxfDxZPWQn310Lq/exec";
+const content = document.getElementById('content');
+
+fetch(`${API_URL}?api=public&limit=500&_=${Date.now()}`)
+  .then(r => r.json())
+  .then(data => {
+    if (!data || !data.length) {
+      content.innerHTML = '<p style="color:#64748b;">目前尚無資料。</p>';
+      return;
+    }
+    content.innerHTML = data.map((it, i) => `
+      <section class="case">
+        <h2>案件 ${i + 1}　#${it.caseId || ''}</h2>
+        <div class="meta">
+          <div><span class="meta-label">回報時間：</span>${it.time || ''}</div>
+          <div><span class="meta-label">地點：</span>${it.location || ''}</div>
+          ${it.location_note ? `<div><span class="meta-label">地點說明：</span>${it.location_note}</div>` : ''}
+        </div>
+        <div class="desc">${(it.description || '').replace(/\n/g,'<br>')}</div>
+        ${(it.images && it.images.length) ? `
+          <div class="images">
+            ${it.images.map(img => `<img src="${img.viewUrl.replace('/view','/preview')}" alt="案件照片">`).join('')}
+          </div>
+        ` : '<div style="color:#9ca3af;">無上傳照片</div>'}
+      </section>
+    `).join('');
+  })
+  .catch(err => {
+    console.error(err);
+    content.innerHTML = '<p style="color:#b91c1c;">資料載入失敗。</p>';
+  });
+</script>
+</body>
+</html>
