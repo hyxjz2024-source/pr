@@ -5,67 +5,50 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>新加州社區委員會提列事項缺失照片</title>
 <style>
-  body {
-    font-family: "Noto Sans TC", system-ui, -apple-system;
-    background: #fff;
-    color: #000;
-    margin: 0;
-    padding: 20px;
-  }
-  h1 {
-    text-align: center;
-    font-size: 1.4rem;
-    border-bottom: 2px solid #000;
-    padding-bottom: 6px;
-    margin-bottom: 12px;
-  }
-  table {
-    border-collapse: collapse;
-    width: 100%;
-    table-layout: fixed;
-  }
-  th, td {
-    border: 1px solid #000;
-    font-size: 0.9rem;
-    padding: 6px;
-    vertical-align: top;
-    text-align: center;
-    word-break: break-all;
-  }
-  th {
-    background: #f8f8f8;
-    font-weight: 700;
-  }
-  td.desc {
-    text-align: left;
-    line-height: 1.5;
-  }
-  .photo img {
-    width: 100%;
-    max-width: 200px;
-    height: auto;
-    display: block;
-    margin: 4px auto;
-    border: 1px solid #ccc;
-  }
-  .footer {
-    text-align: center;
-    font-size: 0.85rem;
-    color: #555;
-    margin-top: 12px;
-  }
-  @media print {
-    @page { size: A4 landscape; margin: 12mm; }
-    .no-print { display: none; }
-    body { -webkit-print-color-adjust: exact; }
+  body{font-family:"Noto Sans TC",system-ui,-apple-system;background:#fff;color:#000;margin:0;padding:20px}
+  h1{ text-align:center;font-size:1.4rem;border-bottom:2px solid #000;padding-bottom:6px;margin:0 0 12px }
+  table{ border-collapse:collapse;width:100%;table-layout:fixed }
+  col.col-no{ width:44px }
+  col.col-dev{ width:86px }
+  col.col-loc{ width:150px }
+  col.col-desc{ width:280px }
+  col.col-cat{ width:86px }
+  col.col-photo{ width:320px }   /* 照片欄預留寬度 */
+  col.col-prog{ width:120px }
+  col.col-note{ width:160px }
+
+  th,td{ border:1px solid #000;font-size:.9rem;padding:6px;vertical-align:top;text-align:center;word-break:break-word }
+  th{ background:#f8f8f8;font-weight:700 }
+  td.desc{ text-align:left;line-height:1.55 }
+  td.loc{ text-align:left;line-height:1.5 }
+  .loc-note{ color:#555;font-size:.88em }
+  .photo img{ width:100%;max-width:300px;height:auto;display:block;margin:4px auto;border:1px solid #ccc }
+  .footer{ text-align:center;font-size:.85rem;color:#555;margin-top:12px }
+
+  @media print{
+    @page{ size:A4 landscape; margin:12mm }
+    .no-print{ display:none }
+    body{ -webkit-print-color-adjust:exact }
   }
 </style>
 </head>
 <body>
   <h1>新加州社區委員會提列事項缺失照片</h1>
-  <button class="no-print" onclick="window.print()" style="float:right;margin-bottom:10px;">🖨 列印報告</button>
+  <button class="no-print" onclick="window.print()" style="float:right;margin-bottom:10px">🖨 列印報告</button>
 
-  <table id="reportTable">
+  <table>
+    <!-- 固定每欄寬度 -->
+    <colgroup>
+      <col class="col-no">
+      <col class="col-dev">
+      <col class="col-loc">
+      <col class="col-desc">
+      <col class="col-cat">
+      <col class="col-photo">
+      <col class="col-prog">
+      <col class="col-note">
+    </colgroup>
+
     <thead>
       <tr>
         <th>項次</th>
@@ -90,31 +73,37 @@
 <script>
 const API_URL = "https://script.google.com/macros/s/AKfycbyEuG_5s5RhDD5fHPafkkneTb4lEkgah7xTS1Y_A3HBK468aAM89GxfDxZPWQn310Lq/exec";
 const tbody = document.getElementById('reportBody');
-
-function safe(s){return s?String(s).replace(/[&<>]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[m])):'';}
+const esc = s => s ? String(s).replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[m])) : '';
 
 fetch(`${API_URL}?api=public&limit=500&_=${Date.now()}`)
-  .then(r => r.json())
-  .then(data => {
-    if (!data || !data.length) {
+  .then(r=>r.json())
+  .then(list=>{
+    if(!list || !list.length){
       tbody.innerHTML = '<tr><td colspan="8">目前沒有資料</td></tr>';
       return;
     }
 
-    tbody.innerHTML = data.map((it, i) => {
-      const imgs = (it.images || []).map(img => {
-        // 使用舊版可顯示邏輯
-        const src = img.thumbUrl || img.viewUrl || img.fileUrl || '';
-        return src ? `<img src="${src}" alt="案件照片" loading="lazy">` : '';
-      }).join('');
+    tbody.innerHTML = list.map((it, i)=>{
+      // 楼層位置 = 地點 +（若有「地點說明」則換行顯示）
+      const locMain = esc(it.location || '');
+      const locNote = it.location_note ? `<br><span class="loc-note">（${esc(it.location_note)}）</span>` : '';
+      const locCell = `${locMain}${locNote}`;
+
+      // 照片：沿用原本可顯示的 thumbUrl / viewUrl / fileUrl
+      const imgs = (it.images || [])
+        .map(img => {
+          const src = img.thumbUrl || img.viewUrl || img.fileUrl || '';
+          return src ? `<img src="${src}" alt="案件照片" loading="lazy">` : '';
+        })
+        .join('');
 
       return `
         <tr>
-          <td>${i + 1}</td>
+          <td>${i+1}</td>
           <td>其他</td>
-          <td>${safe(it.location || '')}</td>
-          <td class="desc">${safe(it.description || '').replace(/\n/g,'<br>')}</td>
-          <td>${safe(it.location_note || '')}</td>
+          <td class="loc">${locCell}</td>
+          <td class="desc">${esc(it.description || '').replace(/\n/g,'<br>')}</td>
+          <td>其他</td>
           <td class="photo">${imgs || '—'}</td>
           <td></td>
           <td></td>
@@ -122,7 +111,7 @@ fetch(`${API_URL}?api=public&limit=500&_=${Date.now()}`)
       `;
     }).join('');
   })
-  .catch(err => {
+  .catch(err=>{
     console.error(err);
     tbody.innerHTML = '<tr><td colspan="8">資料載入失敗</td></tr>';
   });
