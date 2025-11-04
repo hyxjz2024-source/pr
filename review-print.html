@@ -13,7 +13,7 @@
   col.col-loc{ width:150px }
   col.col-desc{ width:280px }
   col.col-cat{ width:86px }
-  col.col-photo{ width:320px }   /* 照片欄預留寬度 */
+  col.col-photo{ width:320px }
   col.col-prog{ width:120px }
   col.col-note{ width:160px }
 
@@ -26,9 +26,15 @@
   .footer{ text-align:center;font-size:.85rem;color:#555;margin-top:12px }
 
   @media print{
-    @page{ size:A4 landscape; margin:12mm }
+    @page{ size:A4 portrait; margin:12mm; } /* 改為直式 */
     .no-print{ display:none }
-    body{ -webkit-print-color-adjust:exact }
+    body{ -webkit-print-color-adjust:exact; zoom:0.9; } /* 自動微縮整頁，避免超寬 */
+    table{ font-size:0.85rem; }
+    .photo img{ max-width:160px; }
+  }
+
+  @media print and (orientation:landscape){
+    body{ zoom:1; } /* 若手動改橫式，自動放大回原比例 */
   }
 </style>
 </head>
@@ -37,7 +43,6 @@
   <button class="no-print" onclick="window.print()" style="float:right;margin-bottom:10px">🖨 列印報告</button>
 
   <table>
-    <!-- 固定每欄寬度 -->
     <colgroup>
       <col class="col-no">
       <col class="col-dev">
@@ -48,7 +53,6 @@
       <col class="col-prog">
       <col class="col-note">
     </colgroup>
-
     <thead>
       <tr>
         <th>項次</th>
@@ -84,12 +88,10 @@ fetch(`${API_URL}?api=public&limit=500&_=${Date.now()}`)
     }
 
     tbody.innerHTML = list.map((it, i)=>{
-      // 楼層位置 = 地點 +（若有「地點說明」則換行顯示）
       const locMain = esc(it.location || '');
       const locNote = it.location_note ? `<br><span class="loc-note">（${esc(it.location_note)}）</span>` : '';
       const locCell = `${locMain}${locNote}`;
 
-      // 照片：沿用原本可顯示的 thumbUrl / viewUrl / fileUrl
       const imgs = (it.images || [])
         .map(img => {
           const src = img.thumbUrl || img.viewUrl || img.fileUrl || '';
