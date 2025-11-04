@@ -3,114 +3,98 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>新加州｜住戶公設回報報告書（列印版）</title>
+<title>新加州社區委員會提列事項缺失照片</title>
 <style>
   body {
     font-family: "Noto Sans TC", system-ui, -apple-system;
-    background: #fff;
-    color: #111;
     margin: 0;
-    padding: 0;
+    background: #fff;
+    color: #000;
   }
   .wrap {
-    max-width: 960px;
+    max-width: 1200px;
     margin: 0 auto;
-    padding: 40px 24px;
+    padding: 20px;
   }
-  header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 3px solid #3b82f6;
-    margin-bottom: 24px;
-    padding-bottom: 8px;
-  }
-  header h1 {
-    margin: 0;
-    color: #1e3a8a;
-    font-size: 1.5rem;
-  }
-  .print-btn {
-    background: #3b82f6;
-    color: #fff;
-    border: none;
-    border-radius: 6px;
-    padding: 8px 16px;
-    cursor: pointer;
-    font-size: 0.95rem;
-    box-shadow: 0 2px 6px rgba(59,130,246,0.3);
-  }
-  @media print {
-    .print-btn { display: none; }
+  h1 {
+    text-align: center;
+    font-size: 1.4rem;
+    margin-bottom: 10px;
+    border-bottom: 2px solid #000;
+    padding-bottom: 6px;
   }
   table {
     border-collapse: collapse;
     width: 100%;
-    margin-bottom: 40px;
+    table-layout: fixed;
+    margin-top: 10px;
     page-break-after: always;
   }
   th, td {
-    border: 1px solid #94a3b8;
-    padding: 10px 12px;
-    font-size: 0.95rem;
+    border: 1px solid #000;
+    padding: 6px 4px;
+    font-size: 0.9rem;
     vertical-align: top;
+    text-align: center;
+    word-break: break-all;
   }
   th {
-    background: #e2e8f0;
-    text-align: left;
-    width: 18%;
-  }
-  .case-title {
-    font-size: 1.1rem;
+    background: #f8f8f8;
     font-weight: 700;
-    color: #2563eb;
-    margin-bottom: 4px;
   }
-  .desc {
-    white-space: pre-wrap;
-    line-height: 1.6;
+  td.desc {
+    text-align: left;
   }
-  .images {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-    margin-top: 8px;
-  }
-  .images img {
+  td img {
     width: 100%;
-    max-width: 400px;
-    border: 1px solid #cbd5e1;
-    border-radius: 6px;
-    object-fit: contain;
+    max-width: 240px;
+    height: auto;
+    margin: 4px auto;
+    display: block;
+    border: 1px solid #ccc;
   }
-  footer {
+  @media print {
+    .no-print { display: none; }
+    body { -webkit-print-color-adjust: exact; }
+    @page { size: A4 landscape; margin: 15mm; }
+  }
+  .footer {
     text-align: center;
-    color: #6b7280;
     font-size: 0.85rem;
-    margin-top: 40px;
-    border-top: 1px solid #e5e7eb;
-    padding-top: 8px;
+    color: #555;
+    margin-top: 10px;
   }
 </style>
 </head>
 <body>
   <div class="wrap">
-    <header>
-      <h1>新加州社區｜住戶公設回報報告書</h1>
-      <button class="print-btn" onclick="window.print()">🖨 列印報告</button>
-    </header>
-
-    <div id="content">載入中...</div>
-
-    <footer>
-      感謝各位鄰居的協助，以上資料將提交給驗收廠商，<br>
-      同步整理於驗收報告，作為建商改善依據。
-    </footer>
+    <h1>新加州社區委員會提列事項缺失照片</h1>
+    <button class="no-print" onclick="window.print()" style="float:right;margin-bottom:10px;">🖨 列印報告</button>
+    <table id="reportTable">
+      <thead>
+        <tr>
+          <th>項次</th>
+          <th>設備名稱</th>
+          <th>樓層位置</th>
+          <th>缺失說明</th>
+          <th>類別</th>
+          <th>缺失照片</th>
+          <th>改善情況</th>
+          <th>改善說明</th>
+        </tr>
+      </thead>
+      <tbody id="reportBody">
+        <tr><td colspan="8">資料載入中…</td></tr>
+      </tbody>
+    </table>
+    <div class="footer">
+      感謝各位鄰居協助提供回報資料，以上缺失將彙整提交驗收廠商與建商改善。
+    </div>
   </div>
 
 <script>
 const API_URL = "https://script.google.com/macros/s/AKfycbyEuG_5s5RhDD5fHPafkkneTb4lEkgah7xTS1Y_A3HBK468aAM89GxfDxZPWQn310Lq/exec";
-const content = document.getElementById('content');
+const tbody = document.getElementById('reportBody');
 
 function extractId(url) {
   const m = url.match(/\/d\/([A-Za-z0-9_-]{10,})\//) || url.match(/id=([A-Za-z0-9_-]{10,})/);
@@ -121,46 +105,35 @@ fetch(`${API_URL}?api=public&limit=500&_=${Date.now()}`)
   .then(r => r.json())
   .then(data => {
     if (!data || !data.length) {
-      content.innerHTML = '<p style="color:#64748b;">目前尚無資料。</p>';
+      tbody.innerHTML = '<tr><td colspan="8">目前無資料</td></tr>';
       return;
     }
-    content.innerHTML = data.map((it, i) => {
+
+    tbody.innerHTML = data.map((it, i) => {
       const imgs = (it.images || []).map(img => {
         const id = extractId(img.viewUrl);
         return id
           ? `<img src="https://drive.google.com/uc?export=view&id=${id}" alt="案件照片">`
           : '';
       }).join('');
+
       return `
-        <table>
-          <tr>
-            <th colspan="2">
-              <div class="case-title">案件 ${i + 1}　#${it.caseId || ''}</div>
-            </th>
-          </tr>
-          <tr>
-            <th>回報時間</th><td>${it.time || ''}</td>
-          </tr>
-          <tr>
-            <th>地點</th><td>${it.location || ''}</td>
-          </tr>
-          ${it.location_note ? `<tr><th>地點說明</th><td>${it.location_note}</td></tr>` : ''}
-          <tr>
-            <th>問題說明</th><td class="desc">${(it.description || '').replace(/\n/g,'<br>')}</td>
-          </tr>
-          <tr>
-            <th>案件照片</th>
-            <td>
-              ${imgs ? `<div class="images">${imgs}</div>` : '<span style="color:#9ca3af;">無上傳照片</span>'}
-            </td>
-          </tr>
-        </table>
+        <tr>
+          <td>${i + 1}</td>
+          <td>其他</td>
+          <td>${it.location || ''}</td>
+          <td class="desc">${(it.description || '').replace(/\n/g, '<br>')}</td>
+          <td>${it.location_note || ''}</td>
+          <td>${imgs || '—'}</td>
+          <td></td>
+          <td></td>
+        </tr>
       `;
     }).join('');
   })
   .catch(err => {
     console.error(err);
-    content.innerHTML = '<p style="color:#b91c1c;">資料載入失敗。</p>';
+    tbody.innerHTML = '<tr><td colspan="8">資料載入失敗</td></tr>';
   });
 </script>
 </body>
