@@ -5,9 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>新加州社區委員會提列事項缺失照片</title>
 <style>
-  /* —— 螢幕／列印通用 —— */
   :root{
-    --paper-w: 186mm;  /* A4(210) - 左右 12mm 邊界 = 186mm 可印寬 */
+    --paper-w: 186mm;  
     --font: "Noto Sans TC", system-ui, -apple-system, Segoe UI, Roboto, Arial, "PingFang TC", "Microsoft JhengHei";
   }
   * { box-sizing:border-box }
@@ -15,7 +14,7 @@
 
   .paper{
     width: var(--paper-w);
-    margin: 10mm auto;         /* 螢幕預覽置中 */
+    margin: 10mm auto;
   }
 
   .toolbar{
@@ -38,7 +37,7 @@
   table{
     width: 100%;
     border-collapse: collapse;
-    table-layout: fixed;     /* 防止列印換頁時撐寬 */
+    table-layout: fixed;
     font-size: 12px;
   }
   th,td{
@@ -51,15 +50,14 @@
   }
   th{ background:#f7f7f7; font-weight:700 }
 
-  /* ✅ 欄寬比例（總和 100%） */
-  col.c-no     { width: 4%  }   /* 項次 */
-  col.c-dev    { width: 4%  }   /* 設備名稱 */
-  col.c-loc    { width: 11% }   /* 樓層位置 */
-  col.c-desc   { width: 25% }   /* 缺失說明 */
-  col.c-cat    { width: 3%  }   /* 級別 */
-  col.c-photo  { width: 33% }   /* 缺失照片 */
-  col.c-prog   { width: 14% }   /* 改善情況 */
-  col.c-note   { width: 6% }    /* 改善說明 */
+  col.c-no     { width: 3%  }
+  col.c-dev    { width: 4%  }
+  col.c-loc    { width: 11% }
+  col.c-desc   { width: 25% }
+  col.c-cat    { width: 4%  }
+  col.c-photo  { width: 33% }
+  col.c-prog   { width: 14% }
+  col.c-note   { width: 6%  }
 
   td.loc{ text-align:left; line-height:1.5 }
   td.desc{ text-align:left; line-height:1.55 }
@@ -68,7 +66,7 @@
   .photo img{
     display:block;
     width:100%;
-    height:auto;             /* 列印時依寬自適應，不會溢出 */
+    height:auto;
     margin: 3px auto;
     border:1px solid #ccc;
   }
@@ -77,19 +75,25 @@
     text-align:center; color:#555; font-size:11px; margin-top:6mm;
   }
 
-  /* —— 列印設定 —— */
   @media print{
     @page{
-      size: A4 portrait;      /* 直式 A4 */
-      margin: 12mm;           /* 左右 12mm，上下 12mm */
+      size: A4 portrait;
+      margin: 12mm;
     }
     .toolbar{ display:none !important; }
     html,body{ margin:0; padding:0 }
-    .paper{ width: var(--paper-w); margin:0 auto }   /* 置中且不超頁寬 */
+    .paper{ width: var(--paper-w); margin:0 auto }
     table{ font-size: 11px }
     th,td{ padding: 3px 5px }
+
+    /* ✅ 允許表格列拆開，減少頁尾空白 */
+    tbody tr { break-inside: auto; page-break-inside: auto; }
+
+    /* ✅ 照片格和照片仍盡量保持整塊 */
+    td.photo { break-inside: avoid; page-break-inside: avoid; }
+    td.photo img { break-inside: avoid; page-break-inside: avoid; max-height: 85mm; object-fit: contain; }
+
     .photo img{ border-color:#bbb }
-    tr, td{ break-inside: avoid; page-break-inside: avoid } /* 盡量避免列被拆開 */
   }
 </style>
 </head>
@@ -136,7 +140,6 @@
 </div>
 
 <script>
-/* 你的 GAS 公開 API */
 const API_URL = "https://script.google.com/macros/s/AKfycbyEuG_5s5RhDD5fHPafkkneTb4lEkgah7xTS1Y_A3HBK468aAM89GxfDxZPWQn310Lq/exec";
 
 const tbody = document.getElementById('reportBody');
@@ -164,7 +167,7 @@ fetch(`${API_URL}?api=public&limit=500&_=${Date.now()}`)
           <td>其他</td>
           <td class="loc">${locMain}${locNote}</td>
           <td class="desc">${esc(it.description || '').replace(/\n/g,'<br>')}</td>
-          <td></td> <!-- 級別：空白 -->
+          <td></td>
           <td class="photo">${imgs || '—'}</td>
           <td></td>
           <td></td>
@@ -179,4 +182,3 @@ fetch(`${API_URL}?api=public&limit=500&_=${Date.now()}`)
 </script>
 </body>
 </html>
-
