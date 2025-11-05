@@ -3,18 +3,17 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>新加州｜公設回報（橫向圖片完整展開）</title>
+<title>新加州｜缺失照片橫向排版</title>
 <style>
   body {
     font-family: "Noto Sans TC", system-ui, -apple-system;
     background: #fff;
-    margin: 0;
     color: #111;
+    margin: 0;
   }
   .wrap {
-    max-width: 1200px;
+    max-width: 95%;
     margin: 20px auto;
-    padding: 0 10px;
   }
   h1 {
     text-align: center;
@@ -31,57 +30,47 @@
   th, td {
     border: 1px solid #000;
     padding: 6px;
+    text-align: center;
     font-size: 14px;
     vertical-align: top;
-    word-wrap: break-word;
   }
   th {
     background: #f5f5f5;
-    text-align: center;
-  }
-  .desc, .loc {
-    text-align: left;
-    line-height: 1.5;
+    font-weight: bold;
   }
 
-  /* ✅ 讓照片橫向排列（自動換行、不出現滾動條） */
+  /* ✅ 圖片橫向排列 + 自動換行 + 不出現捲軸 */
   .photo {
     display: flex;
-    flex-wrap: wrap;          /* 自動換行 */
-    gap: 8px;                 /* 圖片間距 */
+    flex-wrap: wrap;
     justify-content: flex-start;
+    gap: 10px;
   }
   .photo img {
-    display: block;
-    height: 120px;            /* 固定高度，寬度自動 */
+    height: 130px;
     width: auto;
     border: 1px solid #000;
     border-radius: 4px;
     object-fit: cover;
   }
 
-  @media (max-width: 768px) {
-    th, td { font-size: 13px; }
+  @media (max-width: 768px){
     .photo img { height: 90px; }
   }
 </style>
 </head>
 <body>
   <div class="wrap">
-    <h1>新加州｜公設回報（橫向圖片完整展開）</h1>
+    <h1>新加州｜缺失照片一覽</h1>
     <table>
       <thead>
         <tr>
-          <th>項次</th>
-          <th>設備名稱</th>
-          <th>樓層位置</th>
-          <th>缺失說明</th>
-          <th>級別</th>
+          <th style="width:10%;">項次</th>
           <th>缺失照片</th>
         </tr>
       </thead>
       <tbody id="tbody">
-        <tr><td colspan="6" style="text-align:center;">資料載入中…</td></tr>
+        <tr><td colspan="2">資料載入中…</td></tr>
       </tbody>
     </table>
   </div>
@@ -89,28 +78,25 @@
 <script>
 const API_URL = "https://script.google.com/macros/s/AKfycbyEuG_5s5RhDD5fHPafkkneTb4lEkgah7xTS1Y_A3HBK468aAM89GxfDxZPWQn310Lq/exec";
 const tbody = document.getElementById("tbody");
-const esc = s => s ? String(s).replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[m])) : '';
+
+function esc(s){ return s ? String(s).replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[m])) : ''; }
 
 function render(rows){
   if(!rows || !rows.length){
-    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">目前沒有資料</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="2">目前沒有資料</td></tr>';
     return;
   }
-  tbody.innerHTML = rows.map((it, idx)=>{
-    const loc = esc(it.location || '') + (it.location_note ? `<br><small>（${esc(it.location_note)}）</small>` : '');
-    const desc = esc(it.description || '').replace(/\n/g, "<br>");
+
+  tbody.innerHTML = rows.map((it, i)=>{
     const imgs = (it.images || []).map(img=>{
       const src = img.thumbUrl || img.viewUrl || img.fileUrl || '';
       const href = img.viewUrl || src;
       return src ? `<a href="${href}" target="_blank"><img src="${src}" alt="缺失照片"></a>` : '';
     }).join('');
+
     return `
       <tr>
-        <td style="text-align:center;">${idx+1}</td>
-        <td style="text-align:center;">其他</td>
-        <td class="loc">${loc}</td>
-        <td class="desc">${desc}</td>
-        <td style="text-align:center;">其他</td>
+        <td>${i+1}</td>
         <td class="photo">${imgs || '—'}</td>
       </tr>`;
   }).join('');
@@ -121,7 +107,7 @@ fetch(`${API_URL}?api=public&limit=500&_=${Date.now()}`)
   .then(render)
   .catch(e=>{
     console.error(e);
-    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">載入失敗</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="2">載入失敗</td></tr>';
   });
 </script>
 </body>
