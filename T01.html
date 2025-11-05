@@ -2,195 +2,124 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>新加州｜公設回報（橫向圖片版）</title>
-<link rel="icon" href="https://hyxjz.blogspot.com/favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>新加州｜公設回報（橫向完整圖版）</title>
 <style>
-  :root{
-    --font: "Noto Sans TC", system-ui, -apple-system, Segoe UI, Roboto, Arial, "PingFang TC", "Microsoft JhengHei";
-    --ink:#0f172a; --muted:#64748b; --bg:#f6f9ff; --card:#fff; --brand:#3b82f6;
-    --gap: clamp(8px, 2vw, 14px);
+  body {
+    font-family: "Noto Sans TC", system-ui, -apple-system;
+    background: #fff;
+    margin: 0;
+    color: #111;
   }
-  *{ box-sizing:border-box }
-  html,body{ margin:0; padding:0; font-family:var(--font); color:var(--ink); background:linear-gradient(180deg,#eef5ff,#f6f9ff) }
-
-  .wrap{
-    max-width:min(1100px, 100% - clamp(16px,4vw,40px));
-    margin: clamp(12px,3vw,20px) auto;
+  .wrap {
+    max-width: 1200px;
+    margin: 20px auto;
+    padding: 0 10px;
   }
-
-  .header{
-    display:flex; align-items:flex-start; justify-content:space-between; gap:var(--gap);
-    margin-bottom: clamp(12px,3vw,20px);
+  h1 {
+    text-align: center;
+    font-size: 22px;
+    font-weight: 800;
+    margin-bottom: 16px;
   }
-  h1{ margin:0; font-size: clamp(20px, 3.4vw, 28px); line-height:1.2; }
-  .hint{ color:var(--muted); font-size: .95rem; margin-top: 6px; }
-
-  .card{
-    background:var(--card); border-radius:16px; box-shadow:0 10px 30px rgba(3,7,18,.08);
-    padding: clamp(12px, 2.4vw, 18px);
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+    border: 2px solid #000;
   }
-
-  table{
-    width:100%; border-collapse:collapse; table-layout: fixed;
-    background:#fff; border:1px solid #e8efff; border-radius:12px; overflow:hidden;
+  th, td {
+    border: 1px solid #000;
+    padding: 6px;
+    font-size: 14px;
+    vertical-align: top;
+    word-wrap: break-word;
   }
-  th, td{
-    border:1px solid #e8efff; padding:10px; font-size: clamp(13px, 1.9vw, 15px); vertical-align:top;
+  th {
+    background: #f5f5f5;
+    text-align: center;
   }
-  th{
-    background:#f3f7ff; color:#0b1f44; font-weight:800; text-align:center;
+  .desc, .loc {
+    text-align: left;
+    line-height: 1.5;
   }
-  /* 欄寬：可依需要微調 */
-  col.c-no    { width: 7%  }  /* 項次 */
-  col.c-dev   { width: 10% }  /* 設備名稱 */
-  col.c-loc   { width: 18% }  /* 樓層位置 */
-  col.c-desc  { width: 28% }  /* 缺失說明 */
-  col.c-cat   { width: 10% }  /* 級別 */
-  col.c-photo { width: 27% }  /* 缺失照片（橫向捲動） */
-
-  .t-center{ text-align:center }
-  .t-left{ text-align:left }
-  .desc{ line-height:1.6 }
-  .loc-note{ color:#6b7280; font-size: .9em }
-
-  /* ✅ 圖片橫向排列 + 可左右滑動 */
-  .photo{
-    display:flex;
-    gap:10px;
-    overflow-x:auto;
-    padding-bottom:6px;           /* 讓手機上拉條不會貼底 */
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: thin;
+  .photo {
+    text-align: left;
   }
-  .photo a{
-    flex:0 0 auto;                /* 不換行、保持橫向 */
-    text-decoration:none;
-    border-radius:8px;
-    border:1px solid #e5edff;
-    background:#fff;
+  /* ✅ 圖片全橫向顯示（不出現捲軸） */
+  .photo img {
+    display: inline-block;
+    height: 120px;
+    width: auto;
+    margin-right: 8px;
+    border: 1px solid #000;
+    border-radius: 4px;
+    object-fit: cover;
+    vertical-align: middle;
   }
-  .photo img{
-    display:block;
-    height:120px;                 /* 固定高度，寬度自動 */
-    width:auto;
-    object-fit:cover;             /* 如果想完整不裁切，改成 contain */
-    border-radius:8px;
-  }
-  .photo a:hover{ border-color:#cfe0ff; }
-
-  .footer{
-    text-align:center; color:#64748b; font-size:.95rem;
-    margin-top: clamp(12px, 3vw, 20px);
-  }
-
-  /* 小螢幕微調 */
-  @media (max-width: 480px){
-    .photo img{ height:100px }
+  @media (max-width: 768px) {
+    th, td { font-size: 13px; }
+    .photo img { height: 90px; }
   }
 </style>
 </head>
 <body>
   <div class="wrap">
-    <div class="header">
-      <div>
-        <h1>新加州｜公設回報（橫向圖片版）</h1>
-        <div class="hint">圖片於每列「缺失照片」欄位內，橫向排列，可左右滑動；點圖可開新分頁看大圖。</div>
-      </div>
-    </div>
-
-    <div class="card">
-      <table>
-        <colgroup>
-          <col class="c-no">
-          <col class="c-dev">
-          <col class="c-loc">
-          <col class="c-desc">
-          <col class="c-cat">
-          <col class="c-photo">
-        </colgroup>
-        <thead>
-          <tr>
-            <th>項次</th>
-            <th>設備名稱</th>
-            <th>樓層位置</th>
-            <th>缺失說明</th>
-            <th>級別</th>
-            <th>缺失照片（橫向滑動）</th>
-          </tr>
-        </thead>
-        <tbody id="tbody">
-          <tr><td class="t-center" colspan="6">資料載入中…</td></tr>
-        </tbody>
-      </table>
-    </div>
-
-    <div class="footer">為保護隱私，本頁不顯示回報人、聯絡方式與住戶別。</div>
+    <h1>新加州｜公設回報（橫向完整圖版）</h1>
+    <table>
+      <thead>
+        <tr>
+          <th>項次</th>
+          <th>設備名稱</th>
+          <th>樓層位置</th>
+          <th>缺失說明</th>
+          <th>級別</th>
+          <th>缺失照片</th>
+        </tr>
+      </thead>
+      <tbody id="tbody">
+        <tr><td colspan="6" style="text-align:center;">資料載入中…</td></tr>
+      </tbody>
+    </table>
   </div>
 
 <script>
-  // 你的 GAS 公開 API（取自原本 review-print）
-  const API_URL = "https://script.google.com/macros/s/AKfycbyEuG_5s5RhDD5fHPafkkneTb4lEkgah7xTS1Y_A3HBK468aAM89GxfDxZPWQn310Lq/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbyEuG_5s5RhDD5fHPafkkneTb4lEkgah7xTS1Y_A3HBK468aAM89GxfDxZPWQn310Lq/exec";
+const tbody = document.getElementById("tbody");
+const esc = s => s ? String(s).replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[m])) : '';
 
-  const $tbody = document.getElementById('tbody');
-  const esc = s => s ? String(s).replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[m])) : '';
-
-  function render(rows){
-    if(!rows || !rows.length){
-      $tbody.innerHTML = '<tr><td class="t-center" colspan="6">目前沒有資料</td></tr>';
-      return;
-    }
-
-    $tbody.innerHTML = rows.map((it, idx) => {
-      const locMain = esc(it.location || '');
-      const locNote = it.location_note ? `<div class="loc-note">（${esc(it.location_note)}）</div>` : '';
-      const desc = esc(it.description || '').replace(/\n/g,'<br>');
-
-      // ✅ 圖片改為橫向排列的連結 + 縮圖
-      const photos = (it.images || []).map(img => {
-        const src = img.thumbUrl || img.viewUrl || img.fileUrl || '';
-        const href = img.viewUrl || src;
-        if(!src) return '';
-        return `<a href="${href}" target="_blank" rel="noopener"><img src="${src}" alt="缺失照片"></a>`;
-      }).join('');
-
-      return `
-        <tr>
-          <td class="t-center">${idx + 1}</td>
-          <td class="t-center">其他</td>
-          <td class="t-left">${locMain}${locNote}</td>
-          <td class="t-left desc">${desc}</td>
-          <td class="t-center">其他</td>
-          <td class="photo">${photos || '—'}</td>
-        </tr>
-      `;
+function render(rows){
+  if(!rows || !rows.length){
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">目前沒有資料</td></tr>';
+    return;
+  }
+  tbody.innerHTML = rows.map((it, idx)=>{
+    const loc = esc(it.location || '') + (it.location_note ? `<br><small>（${esc(it.location_note)}）</small>` : '');
+    const desc = esc(it.description || '').replace(/\n/g, "<br>");
+    const imgs = (it.images || []).map(img=>{
+      const src = img.thumbUrl || img.viewUrl || img.fileUrl || '';
+      const href = img.viewUrl || src;
+      return src ? `<a href="${href}" target="_blank"><img src="${src}" alt="缺失照片"></a>` : '';
     }).join('');
-  }
+    return `
+      <tr>
+        <td style="text-align:center;">${idx+1}</td>
+        <td style="text-align:center;">其他</td>
+        <td class="loc">${loc}</td>
+        <td class="desc">${desc}</td>
+        <td style="text-align:center;">其他</td>
+        <td class="photo">${imgs || '—'}</td>
+      </tr>`;
+  }).join('');
+}
 
-  // 先嘗試 fetch，失敗再 JSONP（避免 CORS）
-  function loadViaFetch(){
-    const url = `${API_URL}?api=public&limit=500&_=${Date.now()}`;
-    return fetch(url).then(r=>r.json());
-  }
-  function loadViaJSONP(){
-    return new Promise((resolve, reject) => {
-      const cb = 'cb_' + Math.random().toString(36).slice(2);
-      window[cb] = data => { resolve(data); cleanup(); };
-      const s = document.createElement('script');
-      s.src = `${API_URL}?api=public&limit=500&callback=${cb}&_=${Date.now()}`;
-      s.onerror = (e) => { reject(e); cleanup(); };
-      document.head.appendChild(s);
-      function cleanup(){ delete window[cb]; s.remove(); }
-    });
-  }
-
-  loadViaFetch()
-    .catch(() => loadViaJSONP())
-    .then(render)
-    .catch(err => {
-      console.error(err);
-      $tbody.innerHTML = '<tr><td class="t-center" colspan="6">資料載入失敗</td></tr>';
-    });
+fetch(`${API_URL}?api=public&limit=500&_=${Date.now()}`)
+  .then(r=>r.json())
+  .then(render)
+  .catch(e=>{
+    console.error(e);
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">載入失敗</td></tr>';
+  });
 </script>
 </body>
 </html>
