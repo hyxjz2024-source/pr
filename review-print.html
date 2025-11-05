@@ -5,114 +5,140 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>新加州社區委員會提列事項缺失照片</title>
 <style>
-  body{
-    font-family:"Noto Sans TC",system-ui,-apple-system;
-    background:#fff; color:#000; margin:0; padding:20px;
+  /* —— 螢幕／列印通用 —— */
+  :root{
+    --paper-w: 186mm;  /* A4(210) - 左右 12mm 邊界 = 186mm 可印寬 */
+    --font: "Noto Sans TC", system-ui, -apple-system, Segoe UI, Roboto, Arial, "PingFang TC", "Microsoft JhengHei";
   }
-  h1{
-    text-align:center;
-    font-size:1.4rem;
-    border-bottom:2px solid #000;
-    padding-bottom:6px;
-    margin:0 0 12px;
-  }
-  table{
-    border-collapse:collapse;
-    width:95%;
-    table-layout:fixed;
-  }
-  col.col-no{ width:44px }
-  col.col-dev{ width:86px }
-  col.col-loc{ width:150px }
-  col.col-desc{ width:280px }
-  col.col-cat{ width:86px }
-  col.col-photo{ width:320px }
-  col.col-prog{ width:120px }
-  col.col-note{ width:160px }
-  th,td{
-    border:1px solid #000;
-    font-size:.9rem;
-    padding:6px;
-    vertical-align:top;
-    text-align:center;
-    word-break:break-word;
-  }
-  th{ background:#f8f8f8;font-weight:700 }
-  td.desc{ text-align:left; line-height:1.55 }
-  td.loc{ text-align:left; line-height:1.5 }
-  .loc-note{ color:#555; font-size:.88em }
-  .photo img{
-    width:100%;
-    max-width:300px;
-    height:auto;
-    display:block;
-    margin:4px auto;
-    border:1px solid #ccc;
-  }
-  .footer{
-    text-align:center;
-    font-size:.85rem;
-    color:#555;
-    margin-top:12px;
+  * { box-sizing:border-box }
+  html,body{ margin:0; padding:0; background:#fff; color:#000; font-family:var(--font) }
+
+  .paper{
+    width: var(--paper-w);
+    margin: 10mm auto;         /* 螢幕預覽置中 */
   }
 
-  /* 列印設定 */
+  .toolbar{
+    width: var(--paper-w);
+    margin: 6mm auto 0;
+    text-align: right;
+  }
+  .toolbar button{
+    padding:8px 12px; border:1px solid #ccc; background:#f7f7f7; cursor:pointer; border-radius:6px;
+  }
+
+  h1{
+    font-size: 18px;
+    text-align: center;
+    margin: 0 0 6mm;
+    border-bottom: 2px solid #000;
+    padding-bottom: 3mm;
+  }
+
+  table{
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;     /* 防止列印換頁時撐寬 */
+    font-size: 12px;
+  }
+  th,td{
+    border:1px solid #000;
+    padding: 4px 6px;
+    vertical-align: top;
+    word-wrap: break-word;
+    overflow-wrap: anywhere;
+    text-align: center;
+  }
+  th{ background:#f7f7f7; font-weight:700 }
+
+  /* 欄寬用百分比，總和 = 100%（就不會超出 186mm） */
+  col.c-no     { width: 4%  }  /* 項次 */
+  col.c-dev    { width: 8%  }  /* 設備名稱 */
+  col.c-loc    { width: 12% }  /* 樓層位置 */
+  col.c-desc   { width: 28% }  /* 缺失說明 */
+  col.c-cat    { width: 8%  }  /* 類別 */
+  col.c-photo  { width: 25% }  /* 缺失照片 */
+  col.c-prog   { width: 7.5%}  /* 改善情況 */
+  col.c-note   { width: 7.5%}  /* 改善說明 */
+
+  td.loc{ text-align:left; line-height:1.5 }
+  td.desc{ text-align:left; line-height:1.55 }
+  .loc-note{ color:#555; font-size: 11px }
+
+  .photo img{
+    display:block;
+    width:100%;
+    height:auto;             /* 列印時依寬自適應，不會溢出 */
+    margin: 3px auto;
+    border:1px solid #ccc;
+  }
+
+  .footer{
+    text-align:center; color:#555; font-size:11px; margin-top:6mm;
+  }
+
+  /* —— 列印設定 —— */
   @media print{
-    @page{ size:A4 portrait; margin:8mm; }
-    body{
-      -webkit-print-color-adjust: exact;
-      print-color-adjust: exact;
+    @page{
+      size: A4 portrait;      /* 直式 A4 */
+      margin: 12mm;           /* 左右 12mm，上下 12mm */
     }
-table {
-  margin: 0 auto; /* 將上和下邊界設為0，左右自動計算 margin */
-}
-    th,td{ padding:4px 6px; }
-    .photo img{ max-width:120px; height:auto; }
-    tr,td{ break-inside:avoid; page-break-inside:avoid; }
-    .no-print{ display:none !important; }
+    .toolbar{ display:none !important; }
+    html,body{ margin:0; padding:0 }
+    .paper{ width: var(--paper-w); margin:0 auto }   /* 置中且不超頁寬 */
+    table{ font-size: 11px }
+    th,td{ padding: 3px 5px }
+    .photo img{ border-color:#bbb }
+    tr, td{ break-inside: avoid; page-break-inside: avoid } /* 盡量避免列被拆開 */
   }
 </style>
 </head>
 <body>
+
+<div class="toolbar no-print">
+  <button onclick="window.print()">🖨 列印報告</button>
+</div>
+
+<div class="paper">
   <h1>新加州社區委員會提列事項缺失照片</h1>
-  <center>
-    <button class="no-print" onclick="window.print()" style="margin-bottom:10px">🖨 列印報告</button>
 
-    <table>
-      <colgroup>
-        <col class="col-no">
-        <col class="col-dev">
-        <col class="col-loc">
-        <col class="col-desc">
-        <col class="col-cat">
-        <col class="col-photo">
-        <col class="col-prog">
-        <col class="col-note">
-      </colgroup>
-      <thead>
-        <tr>
-          <th>項次</th>
-          <th>設備名稱</th>
-          <th>樓層位置</th>
-          <th>缺失說明</th>
-          <th>類別</th>
-          <th>缺失照片</th>
-          <th>改善情況</th>
-          <th>改善說明</th>
-        </tr>
-      </thead>
-      <tbody id="reportBody">
-        <tr><td colspan="8">資料載入中…</td></tr>
-      </tbody>
-    </table>
+  <table>
+    <colgroup>
+      <col class="c-no">
+      <col class="c-dev">
+      <col class="c-loc">
+      <col class="c-desc">
+      <col class="c-cat">
+      <col class="c-photo">
+      <col class="c-prog">
+      <col class="c-note">
+    </colgroup>
+    <thead>
+      <tr>
+        <th>項次</th>
+        <th>設備名稱</th>
+        <th>樓層位置</th>
+        <th>缺失說明</th>
+        <th>類別</th>
+        <th>缺失照片</th>
+        <th>改善情況</th>
+        <th>改善說明</th>
+      </tr>
+    </thead>
+    <tbody id="reportBody">
+      <tr><td colspan="8">資料載入中…</td></tr>
+    </tbody>
+  </table>
 
-    <div class="footer">
-      感謝各位鄰居的協助，以上資料將提交給驗收廠商，並整理於報告書供建商改善。
-    </div>
-  </center>
+  <div class="footer">
+    感謝各位鄰居的協助，以上資料將提交給驗收廠商，並整理於報告書供建商改善。
+  </div>
+</div>
 
 <script>
+/* 你的 GAS 公開 API */
 const API_URL = "https://script.google.com/macros/s/AKfycbyEuG_5s5RhDD5fHPafkkneTb4lEkgah7xTS1Y_A3HBK468aAM89GxfDxZPWQn310Lq/exec";
+
 const tbody = document.getElementById('reportBody');
 const esc = s => s ? String(s).replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[m])) : '';
 
@@ -127,20 +153,16 @@ fetch(`${API_URL}?api=public&limit=500&_=${Date.now()}`)
     tbody.innerHTML = list.map((it, i)=>{
       const locMain = esc(it.location || '');
       const locNote = it.location_note ? `<br><span class="loc-note">（${esc(it.location_note)}）</span>` : '';
-      const locCell = `${locMain}${locNote}`;
-
-      const imgs = (it.images || [])
-        .map(img => {
-          const src = img.thumbUrl || img.viewUrl || img.fileUrl || '';
-          return src ? `<img src="${src}" alt="案件照片" loading="lazy">` : '';
-        })
-        .join('');
+      const imgs = (it.images || []).map(img=>{
+        const src = img.thumbUrl || img.viewUrl || img.fileUrl || '';
+        return src ? `<img src="${src}" alt="案件照片" loading="lazy">` : '';
+      }).join('');
 
       return `
         <tr>
           <td>${i+1}</td>
           <td>其他</td>
-          <td class="loc">${locCell}</td>
+          <td class="loc">${locMain}${locNote}</td>
           <td class="desc">${esc(it.description || '').replace(/\n/g,'<br>')}</td>
           <td>其他</td>
           <td class="photo">${imgs || '—'}</td>
@@ -157,4 +179,3 @@ fetch(`${API_URL}?api=public&limit=500&_=${Date.now()}`)
 </script>
 </body>
 </html>
-
