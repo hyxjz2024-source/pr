@@ -63,10 +63,8 @@
       -webkit-print-color-adjust: exact;
       print-color-adjust: exact;
     }
-     table {
-    margin-left: auto;
-    margin-right: auto;
-  }
+table {
+  margin: 0 auto; /* 將上和下邊界設為0，左右自動計算 margin */
 }
     th,td{ padding:4px 6px; }
     .photo img{ max-width:120px; height:auto; }
@@ -159,3 +157,4 @@ fetch(`${API_URL}?api=public&limit=500&_=${Date.now()}`)
 </script>
 </body>
 </html>
+
