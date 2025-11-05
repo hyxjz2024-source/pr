@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>新加州｜公設回報（橫向完整圖版）</title>
+<title>新加州｜公設回報（橫向圖片完整展開）</title>
 <style>
   body {
     font-family: "Noto Sans TC", system-ui, -apple-system;
@@ -43,20 +43,23 @@
     text-align: left;
     line-height: 1.5;
   }
+
+  /* ✅ 讓照片橫向排列（自動換行、不出現滾動條） */
   .photo {
-    text-align: left;
+    display: flex;
+    flex-wrap: wrap;          /* 自動換行 */
+    gap: 8px;                 /* 圖片間距 */
+    justify-content: flex-start;
   }
-  /* ✅ 圖片全橫向顯示（不出現捲軸） */
   .photo img {
-    display: inline-block;
-    height: 120px;
+    display: block;
+    height: 120px;            /* 固定高度，寬度自動 */
     width: auto;
-    margin-right: 8px;
     border: 1px solid #000;
     border-radius: 4px;
     object-fit: cover;
-    vertical-align: middle;
   }
+
   @media (max-width: 768px) {
     th, td { font-size: 13px; }
     .photo img { height: 90px; }
@@ -65,7 +68,7 @@
 </head>
 <body>
   <div class="wrap">
-    <h1>新加州｜公設回報（橫向完整圖版）</h1>
+    <h1>新加州｜公設回報（橫向圖片完整展開）</h1>
     <table>
       <thead>
         <tr>
