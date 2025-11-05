@@ -50,13 +50,13 @@
   }
   th{ background:#f7f7f7; font-weight:700 }
 
-  col.c-no     { width: 3%  }
-  col.c-dev    { width: 4%  }
-  col.c-loc    { width: 11% }
+  col.c-no     { width: 5%  }
+  col.c-dev    { width: 6%  }
+  col.c-loc    { width: 10% }
   col.c-desc   { width: 25% }
-  col.c-cat    { width: 4%  }
-  col.c-photo  { width: 33% }
-  col.c-prog   { width: 14% }
+  col.c-cat    { width: 5%  }
+  col.c-photo  { width: 30% }
+  col.c-prog   { width: 13% }
   col.c-note   { width: 6%  }
 
   td.loc{ text-align:left; line-height:1.5 }
@@ -87,11 +87,11 @@
     th,td{ padding: 3px 5px }
 
     /* ✅ 允許表格列拆開，減少頁尾空白 */
-    tbody tr { break-inside: auto; page-break-inside: auto; }
+    /*tbody tr { break-inside: auto; page-break-inside: auto; }
 
     /* ✅ 照片格和照片仍盡量保持整塊 */
-    td.photo { break-inside: avoid; page-break-inside: avoid; }
-    td.photo img { break-inside: avoid; page-break-inside: avoid; max-height: 85mm; object-fit: contain; }
+    /*td.photo { break-inside: avoid; page-break-inside: avoid; }
+    /*td.photo img { break-inside: avoid; page-break-inside: avoid; max-height: 85mm; object-fit: contain; }
 
     .photo img{ border-color:#bbb }
   }
