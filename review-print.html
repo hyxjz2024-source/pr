@@ -57,12 +57,12 @@
   }
 
   /* 列印設定 */
-  @media print{
-    @page{ size:A4 portrait; margin:8mm; }
-    body{
-      -webkit-print-color-adjust: exact;
-      print-color-adjust: exact;
-    }
+@media print {
+  table {
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
     table{
       width:95%;
       font-size:0.82rem;
@@ -158,3 +158,4 @@ fetch(`${API_URL}?api=public&limit=500&_=${Date.now()}`)
 </script>
 </body>
 </html>
+
