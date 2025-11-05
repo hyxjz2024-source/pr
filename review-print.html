@@ -5,22 +5,22 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>新加州社區委員會提列事項缺失照片</title>
 <style>
-  :root{
-    --page-margin: 8mm;                /* 列印邊距（左右各 8mm） */
-    --printable-width: calc(210mm - 2 * var(--page-margin));
-  }
-
-  /* --- 螢幕版面 --- */
   body{
     font-family:"Noto Sans TC",system-ui,-apple-system;
     background:#fff; color:#000; margin:0; padding:20px;
   }
-  .page{ max-width:1100px; margin:0 auto; }
-  h1{ text-align:center; font-size:1.4rem; border-bottom:2px solid #000; padding-bottom:6px; margin:0 0 12px }
-  .no-print{ border:0; background:#e5e7eb; padding:6px 10px; border-radius:6px; cursor:pointer }
-  .no-print:active{ transform:translateY(1px) }
-
-  table{ border-collapse:collapse; width:100%; table-layout:fixed }
+  h1{
+    text-align:center;
+    font-size:1.4rem;
+    border-bottom:2px solid #000;
+    padding-bottom:6px;
+    margin:0 0 12px;
+  }
+  table{
+    border-collapse:collapse;
+    width:95%;
+    table-layout:fixed;
+  }
   col.col-no{ width:44px }
   col.col-dev{ width:86px }
   col.col-loc{ width:150px }
@@ -29,60 +29,55 @@
   col.col-photo{ width:320px }
   col.col-prog{ width:120px }
   col.col-note{ width:160px }
-
-  th,td{ border:1px solid #000; font-size:.9rem; padding:6px; vertical-align:top; text-align:center; word-break:break-word }
-  th{ background:#f8f8f8; font-weight:700 }
+  th,td{
+    border:1px solid #000;
+    font-size:.9rem;
+    padding:6px;
+    vertical-align:top;
+    text-align:center;
+    word-break:break-word;
+  }
+  th{ background:#f8f8f8;font-weight:700 }
   td.desc{ text-align:left; line-height:1.55 }
   td.loc{ text-align:left; line-height:1.5 }
   .loc-note{ color:#555; font-size:.88em }
-  .photo img{ width:100%; max-width:300px; height:auto; display:block; margin:4px auto; border:1px solid #ccc }
-  .footer{ text-align:center; font-size:.85rem; color:#555; margin-top:12px }
-
-  /* --- 列印版面（置中 + 欄寬 + 縮放） --- */
-  @media print{
-    @page{ size: A4 portrait; margin: var(--page-margin); }
-
-    /* 讓整頁置中 */
-    html, body{ background:#fff !important; }
-    body{
-      display:flex; justify-content:center; align-items:flex-start;
-      -webkit-print-color-adjust: exact; print-color-adjust: exact;
-    }
-    .page{
-      width: var(--printable-width);   /* 可列印寬度，讓表格剛好落在可列印區 */
-      margin: 0 auto;
-      zoom: 0.86;                      /* 微縮以確保右欄不截掉，必要時微調 0.82~0.90 */
-    }
-
-    table{ width:100%; table-layout:fixed; font-size:0.82rem; }
-    th,td{ padding:4px 6px; }
-
-    /* 列印專用欄寬（mm 單位更穩定） */
-    col.col-no   { width: 12mm; }
-    col.col-dev  { width: 20mm; }
-    col.col-loc  { width: 26mm; }
-    col.col-desc { width: 56mm; }
-    col.col-cat  { width: 20mm; }
-    col.col-photo{ width: 38mm; }
-    col.col-prog { width: 22mm; }
-    col.col-note { width: 22mm; }
-
-    .photo img{ max-width:120px; height:auto; }
-    tr, td{ break-inside: avoid; page-break-inside: avoid; }
-
-    .no-print{ display:none !important; }
+  .photo img{
+    width:100%;
+    max-width:300px;
+    height:auto;
+    display:block;
+    margin:4px auto;
+    border:1px solid #ccc;
+  }
+  .footer{
+    text-align:center;
+    font-size:.85rem;
+    color:#555;
+    margin-top:12px;
   }
 
-  /* 若手動改為橫式，取消縮放避免過小 */
-  @media print and (orientation:landscape){
-    .page{ zoom:1; }
+  /* 列印設定 */
+  @media print{
+    @page{ size:A4 portrait; margin:8mm; }
+    body{
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    table{
+      width:95%;
+      font-size:0.82rem;
+    }
+    th,td{ padding:4px 6px; }
+    .photo img{ max-width:120px; height:auto; }
+    tr,td{ break-inside:avoid; page-break-inside:avoid; }
+    .no-print{ display:none !important; }
   }
 </style>
 </head>
 <body>
-  <div class="page">
-    <h1>新加州社區委員會提列事項缺失照片</h1>
-    <button class="no-print" onclick="window.print()" style="float:right;margin-bottom:10px">🖨 列印報告</button>
+  <h1>新加州社區委員會提列事項缺失照片</h1>
+  <center>
+    <button class="no-print" onclick="window.print()" style="margin-bottom:10px">🖨 列印報告</button>
 
     <table>
       <colgroup>
@@ -115,7 +110,7 @@
     <div class="footer">
       感謝各位鄰居的協助，以上資料將提交給驗收廠商，並整理於報告書供建商改善。
     </div>
-  </div>
+  </center>
 
 <script>
 const API_URL = "https://script.google.com/macros/s/AKfycbyEuG_5s5RhDD5fHPafkkneTb4lEkgah7xTS1Y_A3HBK468aAM89GxfDxZPWQn310Lq/exec";
